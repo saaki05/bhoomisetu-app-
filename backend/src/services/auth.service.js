@@ -25,6 +25,10 @@ function mapProfileToUser(profile) {
     isEmailVerified: profile.is_email_verified,
     avgRating: Number(profile.avg_rating),
     totalReviews: profile.total_reviews,
+    // Google/OTP signup carries no account type, so those users land with a
+    // defaulted role they never chose. The app gates the main shell on this
+    // and routes them to the role picker first.
+    roleSelected: profile.role_selected ?? true,
     createdAt: profile.created_at,
   };
 }
@@ -112,6 +116,7 @@ async function verifyOtp({ phone, otp, fullName, role }) {
       .update({
         full_name: fullName ?? profile.full_name,
         role: role ?? profile.role,
+        role_selected: role ? true : profile.role_selected,
         is_phone_verified: true,
       })
       .eq('id', profile.id)
@@ -141,7 +146,7 @@ async function googleSignIn({ idToken, role }) {
   if (isFirstSignIn && role) {
     const { data: updated, error: updateError } = await supabaseAdmin
       .from('profiles')
-      .update({ role, is_email_verified: true })
+      .update({ role, role_selected: true, is_email_verified: true })
       .eq('id', profile.id)
       .select('*')
       .single();
@@ -209,6 +214,29 @@ async function getCurrentUser(userId) {
   return mapProfileToUser(profile);
 }
 
+/**
+ * Lets a user who signed up without picking an account type (Google, OTP)
+ * choose one after the fact. Once set, role_selected is permanent — this
+ * isn't a "change my role" endpoint, just "finish onboarding".
+ */
+async function selectRole(userId, role) {
+  const profile = await fetchProfile(userId);
+
+  if (profile.role_selected) {
+    throw AppError.conflict('Account type has already been set', 'ROLE_ALREADY_SELECTED');
+  }
+
+  const { data: updated, error } = await supabaseAdmin
+    .from('profiles')
+    .update({ role, role_selected: true })
+    .eq('id', userId)
+    .select('*')
+    .single();
+
+  if (error || !updated) throw AppError.internal('Failed to set account type');
+  return mapProfileToUser(updated);
+}
+
 module.exports = {
   register,
   login,
@@ -220,4 +248,5 @@ module.exports = {
   forgotPassword,
   resetPassword,
   getCurrentUser,
+  selectRole,
 };

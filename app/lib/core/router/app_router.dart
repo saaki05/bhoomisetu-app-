@@ -7,6 +7,7 @@ import '../../features/authentication/presentation/screens/forgot_password_scree
 import '../../features/authentication/presentation/screens/login_screen.dart';
 import '../../features/authentication/presentation/screens/otp_verification_screen.dart';
 import '../../features/authentication/presentation/screens/register_screen.dart';
+import '../../features/authentication/presentation/screens/select_role_screen.dart';
 import '../../features/chat/presentation/screens/conversations_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/marketplace/presentation/screens/marketplace_screen.dart';
@@ -58,7 +59,8 @@ GoRouter appRouter(AppRouterRef ref) {
     redirect: (context, state) {
       final authState = ref.read(authControllerProvider);
       final isBootstrapping = authState.isLoading && !authState.hasValue;
-      final isLoggedIn = authState.valueOrNull != null;
+      final user = authState.valueOrNull;
+      final isLoggedIn = user != null;
       final path = state.matchedLocation;
 
       if (isBootstrapping) {
@@ -67,7 +69,13 @@ GoRouter appRouter(AppRouterRef ref) {
       if (!isLoggedIn) {
         return _authRoutes.contains(path) ? null : AppRoutes.login;
       }
-      if (_authRoutes.contains(path) || path == AppRoutes.splash) {
+      // Google/OTP signups skip the role picker on the register form —
+      // pin them to /select-role until they've chosen an account type,
+      // before they can reach anything else.
+      if (!user.roleSelected) {
+        return path == AppRoutes.selectRole ? null : AppRoutes.selectRole;
+      }
+      if (_authRoutes.contains(path) || path == AppRoutes.splash || path == AppRoutes.selectRole) {
         return AppRoutes.home;
       }
       return null;
@@ -92,6 +100,10 @@ GoRouter appRouter(AppRouterRef ref) {
       GoRoute(
         path: AppRoutes.forgotPassword,
         builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.selectRole,
+        builder: (context, state) => const SelectRoleScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),

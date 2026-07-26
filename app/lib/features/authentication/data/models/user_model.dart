@@ -21,6 +21,7 @@ class UserModel {
     required this.isEmailVerified,
     required this.avgRating,
     required this.totalReviews,
+    this.roleSelected = true,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) => _$UserModelFromJson(json);
@@ -38,6 +39,7 @@ class UserModel {
   final bool isEmailVerified;
   final double avgRating;
   final int totalReviews;
+  final bool roleSelected;
 
   Map<String, dynamic> toJson() => _$UserModelToJson(this);
 
@@ -55,5 +57,6 @@ class UserModel {
         isEmailVerified: isEmailVerified,
         avgRating: avgRating,
         totalReviews: totalReviews,
+        roleSelected: roleSelected,
       );
 }

@@ -49,6 +49,10 @@ const forgotPasswordSchema = z.object({
   email: z.string().trim().email('Enter a valid email address'),
 });
 
+const selectRoleSchema = z.object({
+  role: roleSchema,
+});
+
 const resetPasswordSchema = z.object({
   recoveryAccessToken: z.string().min(1, 'Recovery token is required'),
   newPassword: passwordSchema,
@@ -63,4 +67,5 @@ module.exports = {
   refreshSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  selectRoleSchema,
 };

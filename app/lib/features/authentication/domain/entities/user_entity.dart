@@ -20,5 +20,9 @@ abstract class UserEntity with _$UserEntity {
     required bool isEmailVerified,
     required double avgRating,
     required int totalReviews,
+    // False for a Google/OTP signup that never went through the role
+    // picker — the router redirects these users to select one before
+    // reaching the main app shell.
+    @Default(true) bool roleSelected,
   }) = _UserEntity;
 }

@@ -81,4 +81,38 @@ describe('Auth routes', () => {
       expect(authService.getCurrentUser).toHaveBeenCalledWith('user-1');
     });
   });
+
+  describe('PATCH /api/v1/auth/role', () => {
+    it('rejects an unauthenticated request', async () => {
+      const response = await request(app).patch('/api/v1/auth/role').send({ role: 'farmer' });
+      expect(response.status).toBe(401);
+    });
+
+    it('rejects an invalid role value', async () => {
+      const { signAccessToken } = require('../src/utils/jwt');
+      const token = signAccessToken({ sub: 'user-1', role: 'buyer', email: 'buyer@example.com' });
+
+      const response = await request(app)
+        .patch('/api/v1/auth/role')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ role: 'admin' });
+
+      expect(response.status).toBe(400);
+      expect(authService.selectRole).not.toHaveBeenCalled();
+    });
+
+    it('sets the role for a valid request', async () => {
+      const { signAccessToken } = require('../src/utils/jwt');
+      const token = signAccessToken({ sub: 'user-1', role: 'buyer', email: 'buyer@example.com' });
+      authService.selectRole.mockResolvedValue({ id: 'user-1', role: 'farmer', roleSelected: true });
+
+      const response = await request(app)
+        .patch('/api/v1/auth/role')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ role: 'farmer' });
+
+      expect(response.status).toBe(200);
+      expect(authService.selectRole).toHaveBeenCalledWith('user-1', 'farmer');
+    });
+  });
 });

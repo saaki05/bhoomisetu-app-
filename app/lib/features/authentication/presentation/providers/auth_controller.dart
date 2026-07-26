@@ -6,6 +6,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../core/exceptions/failure.dart';
 import '../../../../core/network/socket_client.dart';
 import '../../../../core/services/session_expiry_notifier.dart';
+import '../../data/repositories_impl/auth_repository_impl.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/entities/user_role.dart';
 import '../../domain/usecases/google_sign_in_usecase.dart';
@@ -84,6 +85,13 @@ class AuthController extends _$AuthController {
 
   Future<Failure?> signInWithGoogle({UserRole? role}) {
     return _submit(() => ref.read(googleSignInUseCaseProvider).call(role: role));
+  }
+
+  /// Completes onboarding for a Google/OTP signup that has no account type
+  /// yet. Reuses [_submit] since this replaces the current user in state
+  /// exactly like the other auth actions.
+  Future<Failure?> selectRole(UserRole role) {
+    return _submit(() => ref.read(authRepositoryProvider).selectRole(role));
   }
 
   /// These three don't authenticate anyone, so they report their own

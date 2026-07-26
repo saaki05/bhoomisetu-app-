@@ -52,6 +52,11 @@ const me = asyncHandler(async (req, res) => {
   sendSuccess(res, { data: user });
 });
 
+const selectRole = asyncHandler(async (req, res) => {
+  const user = await authService.selectRole(req.user.id, req.body.role);
+  sendSuccess(res, { message: 'Account type set successfully', data: user });
+});
+
 module.exports = {
   register,
   login,
@@ -62,5 +67,6 @@ module.exports = {
   logout,
   forgotPassword,
   resetPassword,
+  selectRole,
   me,
 };

@@ -12,6 +12,7 @@ const {
   refreshSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  selectRoleSchema,
 } = require('../validators/auth.validator');
 
 const router = Router();
@@ -114,5 +115,14 @@ router.post('/reset-password', authLimiter, validate({ body: resetPasswordSchema
  *     tags: [Auth]
  */
 router.get('/me', authenticate, controller.me);
+
+/**
+ * @openapi
+ * /auth/role:
+ *   patch:
+ *     summary: Set the account type for a user who signed up without one (Google/OTP)
+ *     tags: [Auth]
+ */
+router.patch('/role', authenticate, validate({ body: selectRoleSchema }), controller.selectRole);
 
 module.exports = router;

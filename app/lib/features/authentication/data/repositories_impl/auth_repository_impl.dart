@@ -170,6 +170,17 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Either<Failure, UserEntity>> selectRole(UserRole role) async {
+    try {
+      final user = await _remote.selectRole(role.apiValue);
+      await _local.updateCachedUser(user);
+      return Right(user.toEntity());
+    } on AppException catch (e) {
+      return Left(failureFromException(e));
+    }
+  }
+
+  @override
   Future<bool> get isBiometricAvailable async {
     try {
       final supported = await _localAuth.isDeviceSupported();

@@ -94,6 +94,14 @@ class AuthRemoteDataSource {
       parser: (json) => UserModel.fromJson(json as Map<String, dynamic>),
     );
   }
+
+  Future<UserModel> selectRole(String role) {
+    return _client.patch<UserModel>(
+      ApiConstants.selectRole,
+      data: {'role': role},
+      parser: (json) => UserModel.fromJson(json as Map<String, dynamic>),
+    );
+  }
 }
 
 @Riverpod(keepAlive: true)

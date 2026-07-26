@@ -41,6 +41,10 @@ abstract class AuthRepository {
 
   Future<Either<Failure, UserEntity>> getCurrentUser();
 
+  /// Sets the account type for a user who signed up via Google/OTP without
+  /// picking one. Fails if a role has already been explicitly chosen.
+  Future<Either<Failure, UserEntity>> selectRole(UserRole role);
+
   /// Whether this device has usable biometric hardware with at least one
   /// fingerprint/face enrolled — gates whether the "Use biometric login"
   /// toggle is even shown.

@@ -7,9 +7,13 @@ abstract final class ApiConstants {
   static String get baseUrl => dotenv.env['API_BASE_URL'] ?? 'http://10.0.2.2:4000/api/v1';
   static String get socketUrl => dotenv.env['SOCKET_URL'] ?? 'http://10.0.2.2:4000';
 
-  static const Duration connectTimeout = Duration(seconds: 15);
-  static const Duration receiveTimeout = Duration(seconds: 20);
-  static const Duration sendTimeout = Duration(seconds: 20);
+  // Generous enough to survive a free-tier host cold start: Render spins
+  // idle services down after ~15 minutes and the next request waits ~30-50s
+  // while the container boots. Shorter timeouts surface that as a bogus
+  // "no internet connection" error on the first launch of the day.
+  static const Duration connectTimeout = Duration(seconds: 70);
+  static const Duration receiveTimeout = Duration(seconds: 70);
+  static const Duration sendTimeout = Duration(seconds: 70);
 
   // Auth
   static const String register = '/auth/register';
@@ -22,6 +26,7 @@ abstract final class ApiConstants {
   static const String forgotPassword = '/auth/forgot-password';
   static const String resetPassword = '/auth/reset-password';
   static const String me = '/auth/me';
+  static const String selectRole = '/auth/role';
 
   // Home
   static const String homeSummary = '/home/summary';
