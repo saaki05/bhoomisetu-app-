@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 9+ (API 28) blocks cleartext HTTP by default, which would stop the
+  app from reaching a locally-hosted dev backend over http://.
+
+  Rather than blanket-enabling cleartext (android:usesCleartextTraffic="true"),
+  which would weaken security for ALL destinations including production, this
+  permits cleartext only for the specific local/dev hosts we talk to during
+  development. Every other destination — including the deployed backend —
+  still requires HTTPS.
+
+  Once the backend is deployed behind HTTPS, no changes are needed here:
+  HTTPS traffic is unaffected by this file.
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <!-- Android emulator's alias for the host machine -->
+        <domain includeSubdomains="false">10.0.2.2</domain>
+        <!-- Loopback, for adb reverse port forwarding -->
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <!-- Dev machine on the phone's hotspot / local Wi-Fi -->
+        <domain includeSubdomains="false">172.20.10.2</domain>
+        <domain includeSubdomains="false">10.10.37.210</domain>
+    </domain-config>
+</network-security-config>
