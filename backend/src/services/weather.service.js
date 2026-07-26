@@ -34,6 +34,16 @@ function describeCode(code) {
   return WMO_CONDITIONS[code] ?? { condition: 'Clouds', description: 'variable conditions', icon: '02d' };
 }
 
+// Open-Meteo's free tier rate-limits by burst volume, and Render's free-tier
+// egress IP is shared across other customers' traffic too — so every Home
+// screen load hitting the API directly trips 429s under real usage. Weather
+// doesn't change meaningfully inside a short window, so cache per-location
+// responses and cache geocoded coordinates indefinitely (a district's
+// lat/lon never changes).
+const WEATHER_CACHE_TTL_MS = 20 * 60 * 1000;
+const weatherCache = new Map();
+const geocodeCache = new Map();
+
 async function fetchJson(url, timeoutMs = 6000) {
   const response = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
   if (!response.ok) throw new Error(`Request to ${url} returned ${response.status}`);
@@ -46,6 +56,9 @@ async function fetchJson(url, timeoutMs = 6000) {
  * so the caller can fall back to a default location.
  */
 async function geocode(district) {
+  const cached = geocodeCache.get(district);
+  if (cached) return cached;
+
   try {
     // Open-Meteo's `name` param is a single place-name lookup, not a
     // free-text address — combining "district, state" into one string
@@ -57,7 +70,9 @@ async function geocode(district) {
     );
     const match = data.results?.[0];
     if (!match) return null;
-    return { name: `${match.name}, ${match.admin1 ?? 'India'}`, latitude: match.latitude, longitude: match.longitude };
+    const location = { name: `${match.name}, ${match.admin1 ?? 'India'}`, latitude: match.latitude, longitude: match.longitude };
+    geocodeCache.set(district, location);
+    return location;
   } catch (error) {
     logger.warn('Weather geocoding failed', { error: error.message, district });
     return null;
@@ -71,9 +86,12 @@ async function geocode(district) {
  * because the user hasn't filled in their district yet.
  */
 async function getWeatherForLocation({ district, state }) {
-  try {
-    const location = (district ? await geocode(district) : null) ?? DEFAULT_LOCATION;
+  const location = (district ? await geocode(district) : null) ?? DEFAULT_LOCATION;
 
+  const cached = weatherCache.get(location.name);
+  if (cached && cached.expiresAt > Date.now()) return cached.data;
+
+  try {
     const data = await fetchJson(
       'https://api.open-meteo.com/v1/forecast' +
         `?latitude=${location.latitude}&longitude=${location.longitude}` +
@@ -84,7 +102,7 @@ async function getWeatherForLocation({ district, state }) {
     const current = data.current ?? {};
     const { condition, description, icon } = describeCode(current.weather_code);
 
-    return {
+    const result = {
       location: location.name,
       temperatureCelsius: current.temperature_2m,
       feelsLikeCelsius: current.apparent_temperature,
@@ -96,9 +114,14 @@ async function getWeatherForLocation({ district, state }) {
       sunrise: data.daily?.sunrise?.[0] ?? null,
       sunset: data.daily?.sunset?.[0] ?? null,
     };
+
+    weatherCache.set(location.name, { data: result, expiresAt: Date.now() + WEATHER_CACHE_TTL_MS });
+    return result;
   } catch (error) {
     logger.warn('Weather request failed', { error: error.message });
-    return null;
+    // Serve a stale cache entry rather than nothing if Open-Meteo is
+    // erroring or rate-limiting — better a slightly old reading than none.
+    return cached?.data ?? null;
   }
 }
 
