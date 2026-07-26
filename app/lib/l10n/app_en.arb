@@ -1,0 +1,49 @@
+{
+  "@@locale": "en",
+  "appName": "BhoomiSetu",
+  "@appName": {"description": "The application name shown on splash and about screens"},
+
+  "commonRetry": "Retry",
+  "commonCancel": "Cancel",
+  "commonSave": "Save",
+  "commonSubmit": "Submit",
+  "commonLoading": "Loading...",
+  "commonSomethingWentWrong": "Something went wrong",
+  "commonNoInternet": "No internet connection",
+  "commonEmpty": "Nothing here yet",
+
+  "authLoginTitle": "Welcome back",
+  "authLoginSubtitle": "Log in to continue trading, farming smarter.",
+  "authRegisterTitle": "Create your account",
+  "authEmailLabel": "Email",
+  "authPhoneLabel": "Mobile number",
+  "authPasswordLabel": "Password",
+  "authConfirmPasswordLabel": "Confirm password",
+  "authFullNameLabel": "Full name",
+  "authRoleFarmer": "Farmer",
+  "authRoleBuyer": "Buyer",
+  "authRoleExpert": "Agricultural Expert",
+  "authLoginButton": "Log in",
+  "authRegisterButton": "Create account",
+  "authForgotPassword": "Forgot password?",
+  "authOtpTitle": "Verify your number",
+  "authOtpSubtitle": "Enter the 6-digit code sent to {phone}",
+  "@authOtpSubtitle": {
+    "placeholders": {"phone": {"type": "String"}}
+  },
+  "authContinueWithGoogle": "Continue with Google",
+  "authUseBiometrics": "Use biometric login",
+  "authNoAccount": "Don't have an account?",
+  "authHaveAccount": "Already have an account?",
+
+  "homeGreeting": "Namaste, {name}",
+  "@homeGreeting": {
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "homeTodayWeather": "Today's weather",
+  "homeMarketPrices": "Today's market prices",
+  "homeNearbyBuyers": "Nearby buyers",
+  "homeRecommendedCrops": "Recommended for you",
+  "homeGovernmentSchemes": "Government schemes",
+  "homeQuickActions": "Quick actions"
+}

@@ -1,0 +1,34 @@
+require('dotenv').config();
+
+const http = require('http');
+const createApp = require('./app');
+const { loadEnv } = require('./config/env');
+const logger = require('./config/logger');
+const initSocketServer = require('./sockets');
+
+const env = loadEnv();
+const app = createApp();
+const httpServer = http.createServer(app);
+
+const io = initSocketServer(httpServer);
+app.set('io', io);
+
+httpServer.listen(env.PORT, () => {
+  logger.info(`BhoomiSetu API listening on port ${env.PORT} [${env.NODE_ENV}]`);
+  logger.info(`Swagger docs available at ${env.API_BASE_URL}/api/docs`);
+});
+
+function shutdown(signal) {
+  logger.info(`${signal} received, shutting down gracefully...`);
+  httpServer.close(() => {
+    logger.info('HTTP server closed');
+    process.exit(0);
+  });
+  setTimeout(() => process.exit(1), 10000).unref();
+}
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('unhandledRejection', (reason) => {
+  logger.error('Unhandled promise rejection', { reason });
+});

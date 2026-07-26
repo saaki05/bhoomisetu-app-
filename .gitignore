@@ -1,0 +1,25 @@
+# Node / backend
+backend/node_modules/
+backend/.env
+backend/coverage/
+backend/*.log
+npm-debug.log*
+
+# Flutter SDK (installed locally as a sibling tool, not part of the repo)
+/flutter_sdk/
+
+# Local APK hand-off scratch space (built artifacts, not source)
+/apk-share/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+*.iml
+
+# Docker
+*.env.local
