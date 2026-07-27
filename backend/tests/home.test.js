@@ -33,6 +33,6 @@ describe('GET /api/v1/home/summary', () => {
 
     expect(response.status).toBe(200);
     expect(response.body.data.greeting.fullName).toBe('Test Farmer');
-    expect(homeService.getHomeSummary).toHaveBeenCalledWith('user-1');
+    expect(homeService.getHomeSummary).toHaveBeenCalledWith('user-1', { lat: undefined, lon: undefined });
   });
 });

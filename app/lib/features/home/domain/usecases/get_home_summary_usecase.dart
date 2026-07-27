@@ -13,7 +13,8 @@ class GetHomeSummaryUseCase {
 
   final HomeRepository _repository;
 
-  Future<Either<Failure, HomeSummaryEntity>> call() => _repository.getSummary();
+  Future<Either<Failure, HomeSummaryEntity>> call({double? lat, double? lon}) =>
+      _repository.getSummary(lat: lat, lon: lon);
 }
 
 @riverpod

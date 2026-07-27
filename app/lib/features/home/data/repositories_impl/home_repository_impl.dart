@@ -20,9 +20,9 @@ class HomeRepositoryImpl implements HomeRepository {
   final LocalCacheService _cache;
 
   @override
-  Future<Either<Failure, HomeSummaryEntity>> getSummary() async {
+  Future<Either<Failure, HomeSummaryEntity>> getSummary({double? lat, double? lon}) async {
     try {
-      final model = await _remote.getSummary();
+      final model = await _remote.getSummary(lat: lat, lon: lon);
       await _cache.putJson(_homeSummaryCacheKey, model.toJson());
       return Right(model.toEntity());
     } on AppException catch (e) {

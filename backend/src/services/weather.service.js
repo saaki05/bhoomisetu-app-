@@ -1,7 +1,8 @@
 const logger = require('../config/logger');
 
 // A sensible fallback so Home's weather card always shows something real
-// instead of nothing, for users who haven't set a district yet (New Delhi).
+// instead of nothing, for users who haven't set a district yet and whose
+// device location isn't available either (New Delhi).
 const DEFAULT_LOCATION = { name: 'New Delhi, India', latitude: 28.6139, longitude: 77.209 };
 
 // WMO weather codes (used by Open-Meteo) collapsed into the same
@@ -38,14 +39,16 @@ function describeCode(code) {
 // egress IP is shared across other customers' traffic too — so every Home
 // screen load hitting the API directly trips 429s under real usage. Weather
 // doesn't change meaningfully inside a short window, so cache per-location
-// responses and cache geocoded coordinates indefinitely (a district's
-// lat/lon never changes).
+// responses and cache geocoded coordinates indefinitely (a place's lat/lon,
+// or a device fix rounded to ~1km, never meaningfully changes).
 const WEATHER_CACHE_TTL_MS = 20 * 60 * 1000;
 const weatherCache = new Map();
 const geocodeCache = new Map();
+const reverseGeocodeCache = new Map();
 
-async function fetchJson(url, timeoutMs = 6000) {
-  const response = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
+async function fetchJson(url, options = {}) {
+  const { timeoutMs = 6000, headers } = options;
+  const response = await fetch(url, { signal: AbortSignal.timeout(timeoutMs), headers });
   if (!response.ok) throw new Error(`Request to ${url} returned ${response.status}`);
   return response.json();
 }
@@ -80,14 +83,35 @@ async function geocode(district) {
 }
 
 /**
- * Current weather + basic conditions for a district/state via Open-Meteo,
- * which needs no API key. Falls back to a default location (rather than
- * returning null) so the Home screen's weather card is never empty just
- * because the user hasn't filled in their district yet.
+ * Turns a device GPS fix into a human-readable "District, State" label via
+ * OpenStreetMap's free Nominatim reverse-geocoder. Rounded to ~1km so nearby
+ * requests share a cache entry instead of each hitting Nominatim's 1 req/s
+ * rate limit. Falls back to a coordinate string if reverse geocoding fails —
+ * the coordinates themselves are still used for the actual forecast either way.
  */
-async function getWeatherForLocation({ district, state }) {
-  const location = (district ? await geocode(district) : null) ?? DEFAULT_LOCATION;
+async function reverseGeocode(lat, lon) {
+  const key = `${lat.toFixed(2)},${lon.toFixed(2)}`;
+  const cached = reverseGeocodeCache.get(key);
+  if (cached) return cached;
 
+  try {
+    const data = await fetchJson(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=10&addressdetails=1`,
+      { headers: { 'User-Agent': 'BhoomiSetu/1.0 (agricultural trade platform)' } },
+    );
+    const address = data.address ?? {};
+    const district = address.county || address.state_district || address.city || address.town || address.village;
+    const state = address.state;
+    const name = [district, state].filter(Boolean).join(', ') || `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+    reverseGeocodeCache.set(key, name);
+    return name;
+  } catch (error) {
+    logger.warn('Reverse geocoding failed', { error: error.message, lat, lon });
+    return `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+  }
+}
+
+async function fetchForecast(location) {
   const cached = weatherCache.get(location.name);
   if (cached && cached.expiresAt > Date.now()) return cached.data;
 
@@ -125,4 +149,25 @@ async function getWeatherForLocation({ district, state }) {
   }
 }
 
-module.exports = { getWeatherForLocation };
+/**
+ * Current weather for the device's actual GPS position — preferred over
+ * profile-district weather whenever the client can get a location fix,
+ * since a saved district is often stale or never filled in.
+ */
+async function getWeatherForCoordinates(lat, lon) {
+  const name = await reverseGeocode(lat, lon);
+  return fetchForecast({ name, latitude: lat, longitude: lon });
+}
+
+/**
+ * Current weather + basic conditions for a district/state via Open-Meteo,
+ * which needs no API key. Falls back to a default location (rather than
+ * returning null) so the Home screen's weather card is never empty just
+ * because the user hasn't filled in their district yet.
+ */
+async function getWeatherForLocation({ district, state }) {
+  const location = (district ? await geocode(district) : null) ?? DEFAULT_LOCATION;
+  return fetchForecast(location);
+}
+
+module.exports = { getWeatherForLocation, getWeatherForCoordinates };

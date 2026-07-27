@@ -1,5 +1,5 @@
 const { supabaseAdmin } = require('../config/supabase');
-const { getWeatherForLocation } = require('./weather.service');
+const { getWeatherForLocation, getWeatherForCoordinates } = require('./weather.service');
 const AppError = require('../utils/AppError');
 
 async function fetchProfile(userId) {
@@ -92,11 +92,18 @@ async function getNearbyBuyers(district, limit = 10) {
   }));
 }
 
-async function getHomeSummary(userId) {
+async function getHomeSummary(userId, { lat, lon } = {}) {
   const profile = await fetchProfile(userId);
 
+  // A live GPS fix beats a saved district — many profiles never fill that
+  // field in, and even when they do it can go stale as people move around.
+  const weatherPromise =
+    lat != null && lon != null
+      ? getWeatherForCoordinates(lat, lon)
+      : getWeatherForLocation({ district: profile.district, state: profile.state });
+
   const [weather, marketPrices, schemes, nearbyBuyers] = await Promise.all([
-    getWeatherForLocation({ district: profile.district, state: profile.state }),
+    weatherPromise,
     getLatestMarketPrices(),
     getActiveSchemes(),
     profile.role === 'farmer' ? getNearbyBuyers(profile.district) : Promise.resolve([]),

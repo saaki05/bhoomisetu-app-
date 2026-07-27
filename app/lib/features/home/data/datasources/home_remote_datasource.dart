@@ -11,9 +11,10 @@ class HomeRemoteDataSource {
 
   final ApiClient _client;
 
-  Future<HomeSummaryModel> getSummary() {
+  Future<HomeSummaryModel> getSummary({double? lat, double? lon}) {
     return _client.get<HomeSummaryModel>(
       ApiConstants.homeSummary,
+      queryParameters: lat != null && lon != null ? {'lat': lat, 'lon': lon} : null,
       parser: (json) => HomeSummaryModel.fromJson(json as Map<String, dynamic>),
     );
   }
