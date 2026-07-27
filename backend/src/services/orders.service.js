@@ -153,7 +153,16 @@ async function getOrderById(userId, userRole, orderId) {
     .eq('order_id', orderId)
     .order('created_at', { ascending: true });
 
-  return { ...mapOrder(data), history: history ?? [] };
+  // Every other field in this response comes out of mapOrder() as camelCase;
+  // this table's rows don't, so map them the same way rather than leaking
+  // raw snake_case column names into the API contract.
+  const mappedHistory = (history ?? []).map((event) => ({
+    status: event.status,
+    note: event.note,
+    createdAt: event.created_at,
+  }));
+
+  return { ...mapOrder(data), history: mappedHistory };
 }
 
 async function updateOrderStatus(userId, userRole, orderId, payload) {
