@@ -22,7 +22,10 @@ function createApp() {
 
   app.use(helmet());
   app.use(cors({
-    origin: env.NODE_ENV === 'production' ? env.CLIENT_ORIGIN.split(',') : true,
+    // The `cors` package checks an array origin for exact string equality,
+    // so a literal "*" entry never actually matches a real Origin header —
+    // it has to be passed as boolean `true` (reflect any origin) instead.
+    origin: env.NODE_ENV === 'production' && env.CLIENT_ORIGIN !== '*' ? env.CLIENT_ORIGIN.split(',') : true,
     credentials: true,
   }));
   app.use(compression());

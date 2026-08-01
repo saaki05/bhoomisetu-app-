@@ -14,7 +14,9 @@ const env = loadEnv();
 function initSocketServer(httpServer) {
   const io = new Server(httpServer, {
     cors: {
-      origin: env.NODE_ENV === 'production' ? env.CLIENT_ORIGIN.split(',') : true,
+      // Same "*" caveat as app.js: the cors check needs boolean true to
+      // actually reflect any origin, a literal "*" array entry never matches.
+      origin: env.NODE_ENV === 'production' && env.CLIENT_ORIGIN !== '*' ? env.CLIENT_ORIGIN.split(',') : true,
       credentials: true,
     },
   });
