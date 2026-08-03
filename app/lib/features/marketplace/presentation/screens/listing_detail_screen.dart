@@ -126,6 +126,14 @@ class ListingDetailScreen extends ConsumerWidget {
                       const SizedBox(height: AppConstants.spaceSm),
                       Text(listing.description!, style: context.textTheme.bodyMedium),
                     ],
+                    if (listing.videoUrl != null) ...[
+                      const SizedBox(height: AppConstants.spaceLg),
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.play_circle_outline_rounded),
+                        label: const Text('Watch product video'),
+                        onPressed: () => launchUrl(Uri.parse(listing.videoUrl!), mode: LaunchMode.externalApplication),
+                      ),
+                    ],
                     if (listing.farmer != null) ...[
                       const SizedBox(height: AppConstants.spaceXl),
                       Text('Sold by', style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),

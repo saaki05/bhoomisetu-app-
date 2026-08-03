@@ -1,5 +1,5 @@
 const { supabaseAdmin } = require('../config/supabase');
-const { uploadListingImage } = require('./storage.service');
+const { uploadListingImage, uploadListingVideo } = require('./storage.service');
 const AppError = require('../utils/AppError');
 
 function mapListing(row) {
@@ -26,6 +26,7 @@ function mapListing(row) {
     images: (row.crop_listing_images ?? [])
       .sort((a, b) => a.display_order - b.display_order)
       .map((img) => img.image_url),
+    videoUrl: row.crop_listing_videos?.video_url ?? null,
     farmer: row.profiles
       ? {
           id: row.profiles.id,
@@ -44,6 +45,7 @@ const LISTING_SELECT = `
   *,
   categories ( name ),
   crop_listing_images ( image_url, display_order ),
+  crop_listing_videos ( video_url ),
   profiles!crop_listings_farmer_id_fkey ( id, full_name, avatar_url, avg_rating, total_reviews, phone )
 `;
 
@@ -259,6 +261,22 @@ async function addListingImages(farmerId, listingId, files) {
   return data.map((row) => row.image_url);
 }
 
+async function addListingVideo(farmerId, listingId, file) {
+  const { data: existing, error } = await supabaseAdmin
+    .from('crop_listings').select('id, farmer_id').eq('id', listingId).is('deleted_at', null).single();
+  if (error || !existing) throw AppError.notFound('Listing not found', 'LISTING_NOT_FOUND');
+  if (existing.farmer_id !== farmerId) throw AppError.forbidden('You can only edit your own listings', 'NOT_LISTING_OWNER');
+
+  const videoUrl = await uploadListingVideo({
+    userId: farmerId, listingId, buffer: file.buffer, mimeType: file.mimetype, originalName: file.originalname,
+  });
+  const { error: saveError } = await supabaseAdmin.from('crop_listing_videos').upsert(
+    { listing_id: listingId, video_url: videoUrl }, { onConflict: 'listing_id' },
+  );
+  if (saveError) throw AppError.internal('Failed to save product video');
+  return videoUrl;
+}
+
 async function reportListing(userId, listingId, payload) {
   const { data: existing } = await supabaseAdmin
     .from('crop_listings')
@@ -316,6 +334,7 @@ module.exports = {
   updateListing,
   deleteListing,
   addListingImages,
+  addListingVideo,
   reportListing,
   toggleBookmark,
   listBookmarks,

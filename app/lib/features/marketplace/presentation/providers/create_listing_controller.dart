@@ -16,33 +16,27 @@ class CreateListingController extends _$CreateListingController {
   @override
   void build() {}
 
-  /// Creates the listing, then uploads any picked images against the new
-  /// listing's id. If image upload fails after a successful create, the
-  /// listing itself still exists (as a valid, if photo-less, draft) — the
-  /// caller can retry uploading from the edit screen.
   Future<Either<Failure, CropListingEntity>> submit({
     required ListingDraft draft,
     required List<File> images,
+    File? video,
   }) async {
     final createResult = await ref.read(createListingUseCaseProvider).call(draft);
-    if (createResult.isLeft()) {
-      return Left((createResult as Left<Failure, CropListingEntity>).value);
+    if (createResult.isLeft()) return Left((createResult as Left<Failure, CropListingEntity>).value);
+
+    var listing = (createResult as Right<Failure, CropListingEntity>).value;
+    if (images.isNotEmpty) {
+      final multipartImages = await Future.wait(
+        images.map((file) => MultipartFile.fromFile(file.path, filename: file.uri.pathSegments.last)),
+      );
+      final result = await ref.read(uploadListingImagesUseCaseProvider).call(listing.id, multipartImages);
+      result.fold((_) {}, (urls) => listing = listing.copyWith(images: urls));
     }
-    final listing = (createResult as Right<Failure, CropListingEntity>).value;
-
-    if (images.isEmpty) return Right(listing);
-
-    final multipartImages = await Future.wait(
-      images.map((file) => MultipartFile.fromFile(file.path, filename: file.uri.pathSegments.last)),
-    );
-    final uploadResult = await ref.read(uploadListingImagesUseCaseProvider).call(listing.id, multipartImages);
-
-    // The listing itself was created successfully either way; if the image
-    // upload fails, surface the listing without images rather than losing
-    // it — the caller can retry uploads from the edit screen.
-    return uploadResult.fold(
-      (_) => Right(listing),
-      (imageUrls) => Right(listing.copyWith(images: imageUrls)),
-    );
+    if (video != null) {
+      final multipartVideo = await MultipartFile.fromFile(video.path, filename: video.uri.pathSegments.last);
+      final result = await ref.read(uploadListingVideoUseCaseProvider).call(listing.id, multipartVideo);
+      result.fold((_) {}, (url) => listing = listing.copyWith(videoUrl: url));
+    }
+    return Right(listing);
   }
 }

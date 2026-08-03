@@ -83,16 +83,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               children: [
                 Icon(Icons.eco_rounded, size: 48, color: context.colors.primary),
                 const SizedBox(height: AppConstants.spaceMd),
-                Text('Welcome back', style: context.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700)),
+                Text(context.l10n.authLoginTitle, style: context.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700)),
                 const SizedBox(height: AppConstants.spaceXs),
                 Text(
-                  'Log in to continue trading, farming smarter.',
+                  context.l10n.authLoginSubtitle,
                   style: context.textTheme.bodyMedium?.copyWith(color: context.colors.onSurfaceVariant),
                 ),
                 const SizedBox(height: AppConstants.spaceXl),
                 AppTextField(
                   controller: _emailController,
-                  label: 'Email',
+                  label: context.l10n.authEmailLabel,
                   prefixIcon: Icons.mail_outline_rounded,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
@@ -102,7 +102,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: AppConstants.spaceMd),
                 AppTextField(
                   controller: _passwordController,
-                  label: 'Password',
+                  label: context.l10n.authPasswordLabel,
                   prefixIcon: Icons.lock_outline_rounded,
                   obscureText: true,
                   textInputAction: TextInputAction.done,
@@ -114,15 +114,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () => context.push(AppRoutes.forgotPassword),
-                    child: const Text('Forgot password?'),
+                    child: Text(context.l10n.authForgotPassword),
                   ),
                 ),
                 const SizedBox(height: AppConstants.spaceSm),
-                AppButton(label: 'Log in', isLoading: _isSubmitting, onPressed: _submit),
+                AppButton(label: context.l10n.authLoginButton, isLoading: _isSubmitting, onPressed: _submit),
                 if (biometricEnabled) ...[
                   const SizedBox(height: AppConstants.spaceSm),
                   AppButton(
-                    label: 'Log in with biometrics',
+                    label: context.l10n.authUseBiometrics,
                     variant: AppButtonVariant.outlined,
                     icon: Icons.fingerprint_rounded,
                     onPressed: _loginWithBiometrics,
@@ -141,7 +141,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 ),
                 const SizedBox(height: AppConstants.spaceLg),
                 AppButton(
-                  label: 'Continue with Google',
+                  label: context.l10n.authContinueWithGoogle,
                   variant: AppButtonVariant.outlined,
                   icon: Icons.g_mobiledata_rounded,
                   onPressed: _continueWithGoogle,
@@ -157,11 +157,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Don't have an account?"),
+                    Text(context.l10n.authNoAccount),
                     Flexible(
                       child: TextButton(
                         onPressed: () => context.push(AppRoutes.register),
-                        child: const Text('Create account'),
+                        child: Text(context.l10n.authRegisterButton),
                       ),
                     ),
                   ],

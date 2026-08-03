@@ -32,6 +32,7 @@ class AuthRemoteDataSource {
         'role': role,
       },
       parser: (json) => AuthResponseModel.fromJson(json as Map<String, dynamic>),
+      skipAuth: true,
     );
   }
 
@@ -40,11 +41,12 @@ class AuthRemoteDataSource {
       ApiConstants.login,
       data: {'email': email, 'password': password},
       parser: (json) => AuthResponseModel.fromJson(json as Map<String, dynamic>),
+      skipAuth: true,
     );
   }
 
   Future<void> requestOtp({required String phone}) {
-    return _client.post<void>(ApiConstants.requestOtp, data: {'phone': phone});
+    return _client.post<void>(ApiConstants.requestOtp, data: {'phone': phone}, skipAuth: true);
   }
 
   Future<AuthResponseModel> verifyOtp({
@@ -62,6 +64,7 @@ class AuthRemoteDataSource {
         'role': ?role,
       },
       parser: (json) => AuthResponseModel.fromJson(json as Map<String, dynamic>),
+      skipAuth: true,
     );
   }
 
@@ -70,17 +73,19 @@ class AuthRemoteDataSource {
       ApiConstants.googleSignIn,
       data: {'idToken': idToken, 'role': ?role},
       parser: (json) => AuthResponseModel.fromJson(json as Map<String, dynamic>),
+      skipAuth: true,
     );
   }
 
   Future<void> forgotPassword({required String email}) {
-    return _client.post<void>(ApiConstants.forgotPassword, data: {'email': email});
+    return _client.post<void>(ApiConstants.forgotPassword, data: {'email': email}, skipAuth: true);
   }
 
   Future<void> resetPassword({required String recoveryAccessToken, required String newPassword}) {
     return _client.post<void>(
       ApiConstants.resetPassword,
       data: {'recoveryAccessToken': recoveryAccessToken, 'newPassword': newPassword},
+      skipAuth: true,
     );
   }
 

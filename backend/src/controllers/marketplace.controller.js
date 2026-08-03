@@ -44,6 +44,12 @@ const uploadImages = asyncHandler(async (req, res) => {
   sendSuccess(res, { statusCode: 201, message: 'Images uploaded successfully', data: { images } });
 });
 
+const uploadVideo = asyncHandler(async (req, res) => {
+  if (!req.file) throw AppError.badRequest('A video is required', 'NO_VIDEO_PROVIDED');
+  const videoUrl = await marketplaceService.addListingVideo(req.user.id, req.params.id, req.file);
+  sendSuccess(res, { statusCode: 201, message: 'Video uploaded successfully', data: { videoUrl } });
+});
+
 const reportListing = asyncHandler(async (req, res) => {
   await marketplaceService.reportListing(req.user.id, req.params.id, req.body);
   sendSuccess(res, { statusCode: 201, message: 'Listing reported. Our team will review it shortly.' });
@@ -67,6 +73,7 @@ module.exports = {
   updateListing,
   deleteListing,
   uploadImages,
+  uploadVideo,
   reportListing,
   toggleBookmark,
   listBookmarks,

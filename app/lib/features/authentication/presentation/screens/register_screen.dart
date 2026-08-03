@@ -61,7 +61,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Create your account')),
+      appBar: AppBar(title: Text(context.l10n.authRegisterTitle)),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceLg, vertical: AppConstants.spaceMd),
@@ -76,7 +76,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: AppConstants.spaceLg),
                 AppTextField(
                   controller: _fullNameController,
-                  label: 'Full name',
+                  label: context.l10n.authFullNameLabel,
                   prefixIcon: Icons.person_outline_rounded,
                   textInputAction: TextInputAction.next,
                   autofillHints: const [AutofillHints.name],
@@ -85,7 +85,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: AppConstants.spaceMd),
                 AppTextField(
                   controller: _emailController,
-                  label: 'Email',
+                  label: context.l10n.authEmailLabel,
                   prefixIcon: Icons.mail_outline_rounded,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
@@ -105,7 +105,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: AppConstants.spaceMd),
                 AppTextField(
                   controller: _passwordController,
-                  label: 'Password',
+                  label: context.l10n.authPasswordLabel,
                   prefixIcon: Icons.lock_outline_rounded,
                   obscureText: true,
                   textInputAction: TextInputAction.next,
@@ -115,21 +115,21 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 const SizedBox(height: AppConstants.spaceMd),
                 AppTextField(
                   controller: _confirmPasswordController,
-                  label: 'Confirm password',
+                  label: context.l10n.authConfirmPasswordLabel,
                   prefixIcon: Icons.lock_outline_rounded,
                   obscureText: true,
                   textInputAction: TextInputAction.done,
                   validator: (v) => Validators.confirmPassword(v, _passwordController.text),
                 ),
                 const SizedBox(height: AppConstants.spaceXl),
-                AppButton(label: 'Create account', isLoading: _isSubmitting, onPressed: _submit),
+                AppButton(label: context.l10n.authRegisterButton, isLoading: _isSubmitting, onPressed: _submit),
                 const SizedBox(height: AppConstants.spaceMd),
                 Center(
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text('Already have an account?'),
-                      TextButton(onPressed: () => context.pop(), child: const Text('Log in')),
+                      Text(context.l10n.authHaveAccount),
+                      TextButton(onPressed: () => context.pop(), child: Text(context.l10n.authLoginButton)),
                     ],
                   ),
                 ),

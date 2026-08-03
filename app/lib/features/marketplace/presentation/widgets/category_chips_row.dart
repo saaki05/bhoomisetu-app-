@@ -11,7 +11,7 @@ import '../providers/categories_provider.dart';
 const Map<String, IconData> _categoryIcons = {
   'grass': Icons.grass_rounded,
   'eco': Icons.eco_rounded,
-  'nutrition': Icons.nutrition_rounded,
+  'nutrition': Icons.apple_rounded,
   'spa': Icons.spa_rounded,
   'opacity': Icons.opacity_rounded,
   'local_fire_department': Icons.local_fire_department_rounded,

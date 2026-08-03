@@ -13,6 +13,7 @@ class AppTextField extends StatefulWidget {
     this.obscureText = false,
     this.enabled = true,
     this.maxLines = 1,
+    this.maxLength,
     this.prefixIcon,
     this.suffixIcon,
     this.onChanged,
@@ -29,6 +30,7 @@ class AppTextField extends StatefulWidget {
   final bool obscureText;
   final bool enabled;
   final int maxLines;
+  final int? maxLength;
   final IconData? prefixIcon;
   final Widget? suffixIcon;
   final void Function(String)? onChanged;
@@ -49,6 +51,7 @@ class _AppTextFieldState extends State<AppTextField> {
       obscureText: _obscured,
       enabled: widget.enabled,
       maxLines: widget.obscureText ? 1 : widget.maxLines,
+      maxLength: widget.maxLength,
       keyboardType: widget.keyboardType,
       validator: widget.validator,
       onChanged: widget.onChanged,

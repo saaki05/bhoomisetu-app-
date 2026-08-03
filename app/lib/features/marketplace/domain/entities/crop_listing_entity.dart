@@ -36,6 +36,7 @@ abstract class CropListingEntity with _$CropListingEntity {
     required double avgRating,
     required int totalReviews,
     required List<String> images,
+    String? videoUrl,
     ListingFarmer? farmer,
     required String createdAt,
   }) = _CropListingEntity;

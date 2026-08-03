@@ -38,6 +38,7 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
   bool _saveAsDraft = false;
   bool _isSubmitting = false;
   final List<File> _images = [];
+  File? _video;
 
   @override
   void dispose() {
@@ -65,6 +66,11 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
     });
   }
 
+  Future<void> _pickVideo() async {
+    final picked = await _imagePicker.pickVideo(source: ImageSource.gallery, maxDuration: const Duration(seconds: 60));
+    if (picked != null) setState(() => _video = File(picked.path));
+  }
+
   Future<void> _submit({required bool asDraft}) async {
     if (!_formKey.currentState!.validate() || _categoryId == null) {
       if (_categoryId == null) context.showSnackBar('Please select a category', isError: true);
@@ -89,7 +95,11 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
       status: asDraft ? 'draft' : 'active',
     );
 
-    final result = await ref.read(createListingControllerProvider.notifier).submit(draft: draft, images: _images);
+    final result = await ref.read(createListingControllerProvider.notifier).submit(
+      draft: draft,
+      images: _images,
+      video: _video,
+    );
 
     if (!mounted) return;
     setState(() => _isSubmitting = false);
@@ -121,6 +131,17 @@ class _CreateListingScreenState extends ConsumerState<CreateListingScreen> {
                 Text('Photos', style: context.textTheme.labelLarge),
                 const SizedBox(height: AppConstants.spaceSm),
                 _ImagePickerGrid(images: _images, onAdd: _pickImages, onRemove: (i) => setState(() => _images.removeAt(i))),
+                const SizedBox(height: AppConstants.spaceMd),
+                OutlinedButton.icon(
+                  onPressed: _pickVideo,
+                  icon: const Icon(Icons.video_library_outlined),
+                  label: Text(_video == null ? 'Add a product video (optional, up to 60 sec)' : 'Product video selected'),
+                ),
+                if (_video != null)
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(onPressed: () => setState(() => _video = null), child: const Text('Remove video')),
+                  ),
                 const SizedBox(height: AppConstants.spaceLg),
                 categoriesAsync.when(
                   loading: () => const LinearProgressIndicator(),

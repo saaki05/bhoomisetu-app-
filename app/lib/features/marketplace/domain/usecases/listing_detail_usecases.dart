@@ -52,6 +52,15 @@ class UploadListingImagesUseCase {
       _repository.uploadImages(listingId, images);
 }
 
+class UploadListingVideoUseCase {
+  UploadListingVideoUseCase(this._repository);
+
+  final MarketplaceRepository _repository;
+
+  Future<Either<Failure, String>> call(String listingId, MultipartFile video) =>
+      _repository.uploadVideo(listingId, video);
+}
+
 @riverpod
 GetListingUseCase getListingUseCase(GetListingUseCaseRef ref) =>
     GetListingUseCase(ref.watch(marketplaceRepositoryProvider));
@@ -71,3 +80,7 @@ DeleteListingUseCase deleteListingUseCase(DeleteListingUseCaseRef ref) =>
 @riverpod
 UploadListingImagesUseCase uploadListingImagesUseCase(UploadListingImagesUseCaseRef ref) =>
     UploadListingImagesUseCase(ref.watch(marketplaceRepositoryProvider));
+
+@riverpod
+UploadListingVideoUseCase uploadListingVideoUseCase(UploadListingVideoUseCaseRef ref) =>
+    UploadListingVideoUseCase(ref.watch(marketplaceRepositoryProvider));

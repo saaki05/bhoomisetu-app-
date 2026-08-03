@@ -15,4 +15,16 @@ const upload = multer({
   },
 });
 
-module.exports = upload;
+const uploadVideo = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024, files: 1 },
+  fileFilter: (req, file, cb) => {
+    if (!new Set(['video/mp4', 'video/webm', 'video/quicktime']).has(file.mimetype)) {
+      cb(AppError.badRequest('Only MP4, WebM, or MOV videos are allowed', 'INVALID_VIDEO_TYPE'));
+      return;
+    }
+    cb(null, true);
+  },
+});
+
+module.exports = { images: upload, video: uploadVideo };

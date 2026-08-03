@@ -6,13 +6,32 @@ import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/home_summary_entity.dart';
 
 class WeatherCard extends StatelessWidget {
-  const WeatherCard({super.key, required this.weather});
+  const WeatherCard({super.key, required this.weather, this.embedded = false});
 
   final WeatherSnapshot? weather;
+
+  /// True when this card is already sitting inside another gradient
+  /// surface (the Home hero header) — skips its own background/shadow so
+  /// the two don't visually double up.
+  final bool embedded;
 
   @override
   Widget build(BuildContext context) {
     if (weather == null) {
+      if (embedded) {
+        return Row(
+          children: [
+            const Icon(Icons.cloud_off_rounded, color: Colors.white70),
+            const SizedBox(width: AppConstants.spaceMd),
+            Expanded(
+              child: Text(
+                'Weather data is unavailable right now',
+                style: context.textTheme.bodyMedium?.copyWith(color: Colors.white70),
+              ),
+            ),
+          ],
+        );
+      }
       return Container(
         padding: const EdgeInsets.all(AppConstants.spaceLg),
         decoration: BoxDecoration(
@@ -35,6 +54,40 @@ class WeatherCard extends StatelessWidget {
     }
 
     final w = weather!;
+    final content = Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                w.location,
+                style: context.textTheme.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${w.temperatureCelsius.round()}°C · ${w.description}',
+                style: context.textTheme.bodyMedium?.copyWith(color: Colors.white70),
+              ),
+              const SizedBox(height: AppConstants.spaceSm),
+              Row(
+                children: [
+                  _WeatherStat(icon: Icons.water_drop_outlined, label: '${w.humidityPercent}%'),
+                  if (w.windSpeedKmh != null) ...[
+                    const SizedBox(width: AppConstants.spaceMd),
+                    _WeatherStat(icon: Icons.air_rounded, label: '${w.windSpeedKmh} km/h'),
+                  ],
+                ],
+              ),
+            ],
+          ),
+        ),
+        Icon(_iconFor(w.condition), size: 56, color: Colors.white),
+      ],
+    );
+
+    if (embedded) return content;
+
     return Container(
       padding: const EdgeInsets.all(AppConstants.spaceLg),
       decoration: BoxDecoration(
@@ -45,37 +98,7 @@ class WeatherCard extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(AppConstants.radiusLg),
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  w.location,
-                  style: context.textTheme.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${w.temperatureCelsius.round()}°C · ${w.description}',
-                  style: context.textTheme.bodyMedium?.copyWith(color: Colors.white70),
-                ),
-                const SizedBox(height: AppConstants.spaceSm),
-                Row(
-                  children: [
-                    _WeatherStat(icon: Icons.water_drop_outlined, label: '${w.humidityPercent}%'),
-                    if (w.windSpeedKmh != null) ...[
-                      const SizedBox(width: AppConstants.spaceMd),
-                      _WeatherStat(icon: Icons.air_rounded, label: '${w.windSpeedKmh} km/h'),
-                    ],
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Icon(_iconFor(w.condition), size: 56, color: Colors.white),
-        ],
-      ),
+      child: content,
     );
   }
 

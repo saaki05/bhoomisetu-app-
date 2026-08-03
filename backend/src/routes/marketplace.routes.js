@@ -87,8 +87,16 @@ router.post(
   '/listings/:id/images',
   authenticate,
   authorize('farmer', 'admin'),
-  upload.array('images', 6),
+  upload.images.array('images', 6),
   controller.uploadImages,
+);
+
+router.post(
+  '/listings/:id/video',
+  authenticate,
+  authorize('farmer', 'admin'),
+  upload.video.single('video'),
+  controller.uploadVideo,
 );
 
 /**

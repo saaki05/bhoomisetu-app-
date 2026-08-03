@@ -12,6 +12,7 @@ import '../../features/chat/presentation/screens/conversations_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/marketplace/presentation/screens/marketplace_screen.dart';
 import '../../features/orders/presentation/screens/orders_screen.dart';
+import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../shared/screens/app_shell.dart';
 import '../../shared/screens/splash_screen.dart';
 import 'app_routes.dart';
@@ -119,6 +120,9 @@ GoRouter appRouter(AppRouterRef ref) {
           ]),
           StatefulShellBranch(routes: [
             GoRoute(path: AppRoutes.chat, builder: (context, state) => const ConversationsScreen()),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(path: AppRoutes.profile, builder: (context, state) => const ProfileScreen()),
           ]),
         ],
       ),

@@ -7,10 +7,13 @@ import '../../../../core/widgets/states/async_value_widget.dart';
 import '../../../../core/widgets/states/shimmer_box.dart';
 import '../../../authentication/domain/entities/user_role.dart';
 import '../../../authentication/presentation/providers/auth_controller.dart';
+import '../../../home/presentation/widgets/home_section_header.dart';
+import '../../data/agrishop_mock_data.dart';
 import '../../domain/entities/crop_listing_entity.dart';
 import '../../domain/entities/listing_search_filters.dart';
 import '../providers/bookmarks_controller.dart';
 import '../providers/listing_search_controller.dart';
+import '../widgets/agrishop_tile.dart';
 import '../widgets/category_chips_row.dart';
 import '../widgets/filter_bottom_sheet.dart';
 import '../widgets/listing_card.dart';
@@ -82,6 +85,34 @@ class _MarketplaceScreenState extends ConsumerState<MarketplaceScreen> {
           : null,
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppConstants.spaceLg,
+              AppConstants.spaceMd,
+              AppConstants.spaceLg,
+              AppConstants.spaceSm,
+            ),
+            child: const HomeSectionHeader(title: 'Agrishops nearby'),
+          ),
+          SizedBox(
+            height: 118,
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceLg),
+              scrollDirection: Axis.horizontal,
+              itemCount: nearbyAgrishops.length,
+              separatorBuilder: (_, _) => const SizedBox(width: AppConstants.spaceSm),
+              itemBuilder: (_, index) => AgrishopTile(shop: nearbyAgrishops[index]),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppConstants.spaceLg,
+              AppConstants.spaceLg,
+              AppConstants.spaceLg,
+              0,
+            ),
+            child: const HomeSectionHeader(title: 'Browse products nearby'),
+          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(
               AppConstants.spaceLg,

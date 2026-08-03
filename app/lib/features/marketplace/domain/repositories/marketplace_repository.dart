@@ -22,6 +22,8 @@ abstract class MarketplaceRepository {
 
   Future<Either<Failure, List<String>>> uploadImages(String listingId, List<MultipartFile> images);
 
+  Future<Either<Failure, String>> uploadVideo(String listingId, MultipartFile video);
+
   Future<Either<Failure, Unit>> reportListing(String listingId, {required String reason, String? details});
 
   Future<Either<Failure, bool>> toggleBookmark(String listingId);

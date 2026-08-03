@@ -85,6 +85,10 @@ class MarketplaceRepositoryImpl implements MarketplaceRepository {
       _guard(() => _remote.uploadImages(listingId, images));
 
   @override
+  Future<Either<Failure, String>> uploadVideo(String listingId, MultipartFile video) =>
+      _guard(() => _remote.uploadVideo(listingId, video));
+
+  @override
   Future<Either<Failure, Unit>> reportListing(String listingId, {required String reason, String? details}) =>
       _guard(() async {
         await _remote.reportListing(listingId, reason: reason, details: details);

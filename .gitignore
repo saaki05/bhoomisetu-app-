@@ -23,3 +23,5 @@ desktop.ini
 
 # Docker
 *.env.local
+.dart_appdata/
+.dart_localappdata/

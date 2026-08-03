@@ -79,6 +79,14 @@ class MarketplaceRemoteDataSource {
     );
   }
 
+  Future<String> uploadVideo(String listingId, MultipartFile video) {
+    return _client.post<String>(
+      '${ApiConstants.cropListing(listingId)}/video',
+      data: FormData.fromMap({'video': video}),
+      parser: (json) => (json as Map<String, dynamic>)['videoUrl'] as String,
+    );
+  }
+
   Future<void> reportListing(String listingId, {required String reason, String? details}) {
     return _client.post<void>(
       '${ApiConstants.cropListing(listingId)}/report',

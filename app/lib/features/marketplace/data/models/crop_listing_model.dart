@@ -56,6 +56,7 @@ class CropListingModel {
     required this.avgRating,
     required this.totalReviews,
     required this.images,
+    this.videoUrl,
     this.farmer,
     required this.createdAt,
   });
@@ -81,6 +82,7 @@ class CropListingModel {
   final double avgRating;
   final int totalReviews;
   final List<String> images;
+  final String? videoUrl;
   final ListingFarmerModel? farmer;
   final String createdAt;
 
@@ -104,6 +106,7 @@ class CropListingModel {
         avgRating: avgRating,
         totalReviews: totalReviews,
         images: images,
+        videoUrl: videoUrl,
         farmer: farmer?.toEntity(),
         createdAt: createdAt,
       );
