@@ -14,27 +14,40 @@ class ChatRemoteDataSource {
   Future<List<ChatConversationModel>> listConversations() {
     return _client.get<List<ChatConversationModel>>(
       ApiConstants.conversations,
-      parser: (json) =>
-          (json as List).map((e) => ChatConversationModel.fromJson(e as Map<String, dynamic>)).toList(),
+      parser: (json) => (json as List)
+          .map(
+            (e) => ChatConversationModel.fromJson(
+              Map<String, dynamic>.from(e as Map),
+            ),
+          )
+          .toList(),
     );
   }
 
-  Future<ChatConversationModel> startConversation({required String otherUserId, String? listingId}) {
+  Future<ChatConversationModel> startConversation({
+    required String otherUserId,
+    String? listingId,
+  }) {
     return _client.post<ChatConversationModel>(
       ApiConstants.conversations,
       data: {'otherUserId': otherUserId, 'listingId': ?listingId},
-      parser: (json) => ChatConversationModel.fromJson(json as Map<String, dynamic>),
+      parser: (json) => ChatConversationModel.fromJson(
+        Map<String, dynamic>.from(json as Map),
+      ),
     );
   }
 
-  Future<(List<ChatMessageModel> items, Map<String, dynamic>? meta)> listMessages(
-    String conversationId, {
-    int page = 1,
-  }) {
+  Future<(List<ChatMessageModel> items, Map<String, dynamic>? meta)>
+  listMessages(String conversationId, {int page = 1}) {
     return _client.getWithMeta<List<ChatMessageModel>>(
       ApiConstants.conversationMessages(conversationId),
       queryParameters: {'page': page},
-      parser: (json) => (json as List).map((e) => ChatMessageModel.fromJson(e as Map<String, dynamic>)).toList(),
+      parser: (json) => (json as List)
+          .map(
+            (e) =>
+                ChatMessageModel.fromJson(Map<String, dynamic>.from(e as Map)),
+          )
+          .toList(),
     );
   }
 

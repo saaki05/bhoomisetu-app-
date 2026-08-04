@@ -20,55 +20,54 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
     T Function(dynamic json)? parser,
     bool skipAuth = false,
-  }) =>
-      _request<T>(
-        () => _dio.get(path, queryParameters: queryParameters, options: _options(skipAuth)),
-        parser,
-      );
+  }) => _request<T>(
+    () => _dio.get(
+      path,
+      queryParameters: queryParameters,
+      options: _options(skipAuth),
+    ),
+    parser,
+  );
 
   Future<T> post<T>(
     String path, {
     dynamic data,
     T Function(dynamic json)? parser,
     bool skipAuth = false,
-  }) =>
-      _request<T>(
-        () => _dio.post(path, data: data, options: _options(skipAuth)),
-        parser,
-      );
+  }) => _request<T>(
+    () => _dio.post(path, data: data, options: _options(skipAuth)),
+    parser,
+  );
 
   Future<T> put<T>(
     String path, {
     dynamic data,
     T Function(dynamic json)? parser,
     bool skipAuth = false,
-  }) =>
-      _request<T>(
-        () => _dio.put(path, data: data, options: _options(skipAuth)),
-        parser,
-      );
+  }) => _request<T>(
+    () => _dio.put(path, data: data, options: _options(skipAuth)),
+    parser,
+  );
 
   Future<T> patch<T>(
     String path, {
     dynamic data,
     T Function(dynamic json)? parser,
     bool skipAuth = false,
-  }) =>
-      _request<T>(
-        () => _dio.patch(path, data: data, options: _options(skipAuth)),
-        parser,
-      );
+  }) => _request<T>(
+    () => _dio.patch(path, data: data, options: _options(skipAuth)),
+    parser,
+  );
 
   Future<T> delete<T>(
     String path, {
     dynamic data,
     T Function(dynamic json)? parser,
     bool skipAuth = false,
-  }) =>
-      _request<T>(
-        () => _dio.delete(path, data: data, options: _options(skipAuth)),
-        parser,
-      );
+  }) => _request<T>(
+    () => _dio.delete(path, data: data, options: _options(skipAuth)),
+    parser,
+  );
 
   /// Like [get], but also returns the response envelope's `meta` object —
   /// used for paginated endpoints (`{ data: [...], meta: { page, total } }`).
@@ -79,13 +78,24 @@ class ApiClient {
     bool skipAuth = false,
   }) async {
     try {
-      final response = await _dio.get(path, queryParameters: queryParameters, options: _options(skipAuth));
+      final response = await _dio.get(
+        path,
+        queryParameters: queryParameters,
+        options: _options(skipAuth),
+      );
       final body = response.data;
-      final payload = body is Map<String, dynamic> ? body['data'] : body;
-      final meta = body is Map<String, dynamic> ? body['meta'] as Map<String, dynamic>? : null;
+      final envelope = _asStringKeyedMap(body);
+      final payload = envelope?['data'] ?? body;
+      final meta = _asStringKeyedMap(envelope?['meta']);
       return (parser(payload), meta);
     } on DioException catch (error) {
       throw _mapDioException(error);
+    } on AppException {
+      rethrow;
+    } catch (error) {
+      throw UnknownException(
+        'Could not read the server response (${error.runtimeType})',
+      );
     }
   }
 
@@ -98,11 +108,18 @@ class ApiClient {
     try {
       final response = await call();
       final body = response.data;
-      final payload = body is Map<String, dynamic> ? body['data'] : body;
+      final envelope = _asStringKeyedMap(body);
+      final payload = envelope?['data'] ?? body;
       if (parser != null) return parser(payload);
       return payload as T;
     } on DioException catch (error) {
       throw _mapDioException(error);
+    } on AppException {
+      rethrow;
+    } catch (error) {
+      throw UnknownException(
+        'Could not read the server response (${error.runtimeType})',
+      );
     }
   }
 
@@ -119,23 +136,34 @@ class ApiClient {
       return UnknownException(error.message ?? 'Something went wrong');
     }
 
-    final body = response.data;
-    final message = (body is Map<String, dynamic> ? body['message'] as String? : null) ??
-        'Something went wrong';
-    final code = body is Map<String, dynamic> ? body['code'] as String? : null;
+    final body = _asStringKeyedMap(response.data);
+    final message = body?['message'] as String? ?? 'Something went wrong';
+    final code = body?['code'] as String?;
 
     if (response.statusCode == 401) {
       return UnauthorizedException(message);
     }
     if (response.statusCode == 400 && code == 'VALIDATION_ERROR') {
-      final details = body is Map<String, dynamic> ? body['details'] : null;
-      return ValidationException(message, fieldErrors: _extractFieldErrors(details));
+      final details = body?['details'];
+      return ValidationException(
+        message,
+        fieldErrors: _extractFieldErrors(details),
+      );
     }
     if (response.statusCode == 403) {
       return PermissionException(message);
     }
 
-    return ServerException(message, code: code, statusCode: response.statusCode);
+    return ServerException(
+      message,
+      code: code,
+      statusCode: response.statusCode,
+    );
+  }
+
+  Map<String, dynamic>? _asStringKeyedMap(dynamic value) {
+    if (value is! Map) return null;
+    return value.map((key, item) => MapEntry(key.toString(), item));
   }
 
   Map<String, String>? _extractFieldErrors(dynamic details) {
@@ -143,7 +171,9 @@ class ApiClient {
     final fieldErrors = details['fieldErrors'];
     if (fieldErrors is! Map) return null;
     return fieldErrors.map((key, value) {
-      final firstMessage = value is List && value.isNotEmpty ? value.first.toString() : value.toString();
+      final firstMessage = value is List && value.isNotEmpty
+          ? value.first.toString()
+          : value.toString();
       return MapEntry(key.toString(), firstMessage);
     });
   }

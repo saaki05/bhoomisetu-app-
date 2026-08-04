@@ -17,18 +17,21 @@ class MarketplaceRemoteDataSource {
   Future<List<CategoryModel>> getCategories() {
     return _client.get<List<CategoryModel>>(
       ApiConstants.categories,
-      parser: (json) =>
-          (json as List).map((e) => CategoryModel.fromJson(e as Map<String, dynamic>)).toList(),
+      parser: (json) => (json as List)
+          .map(
+            (e) => CategoryModel.fromJson(Map<String, dynamic>.from(e as Map)),
+          )
+          .toList(),
     );
   }
 
-  Future<(List<CropListingModel> items, Map<String, dynamic>? meta)> searchListings(
-    ListingSearchFilters filters,
-  ) {
+  Future<(List<CropListingModel> items, Map<String, dynamic>? meta)>
+  searchListings(ListingSearchFilters filters) {
     return _client.getWithMeta<List<CropListingModel>>(
       ApiConstants.cropListings,
       queryParameters: {
-        if (filters.query != null && filters.query!.isNotEmpty) 'q': filters.query,
+        if (filters.query != null && filters.query!.isNotEmpty)
+          'q': filters.query,
         if (filters.categoryId != null) 'categoryId': filters.categoryId,
         if (filters.district != null) 'district': filters.district,
         if (filters.state != null) 'state': filters.state,
@@ -38,15 +41,20 @@ class MarketplaceRemoteDataSource {
         'sortBy': filters.sortBy.apiValue,
         'page': filters.page,
       },
-      parser: (json) =>
-          (json as List).map((e) => CropListingModel.fromJson(e as Map<String, dynamic>)).toList(),
+      parser: (json) => (json as List)
+          .map(
+            (e) =>
+                CropListingModel.fromJson(Map<String, dynamic>.from(e as Map)),
+          )
+          .toList(),
     );
   }
 
   Future<CropListingModel> getListing(String id) {
     return _client.get<CropListingModel>(
       ApiConstants.cropListing(id),
-      parser: (json) => CropListingModel.fromJson(json as Map<String, dynamic>),
+      parser: (json) =>
+          CropListingModel.fromJson(Map<String, dynamic>.from(json as Map)),
     );
   }
 
@@ -54,15 +62,20 @@ class MarketplaceRemoteDataSource {
     return _client.post<CropListingModel>(
       ApiConstants.cropListings,
       data: payload,
-      parser: (json) => CropListingModel.fromJson(json as Map<String, dynamic>),
+      parser: (json) =>
+          CropListingModel.fromJson(Map<String, dynamic>.from(json as Map)),
     );
   }
 
-  Future<CropListingModel> updateListing(String id, Map<String, dynamic> payload) {
+  Future<CropListingModel> updateListing(
+    String id,
+    Map<String, dynamic> payload,
+  ) {
     return _client.put<CropListingModel>(
       ApiConstants.cropListing(id),
       data: payload,
-      parser: (json) => CropListingModel.fromJson(json as Map<String, dynamic>),
+      parser: (json) =>
+          CropListingModel.fromJson(Map<String, dynamic>.from(json as Map)),
     );
   }
 
@@ -70,12 +83,16 @@ class MarketplaceRemoteDataSource {
     return _client.delete<void>(ApiConstants.cropListing(id));
   }
 
-  Future<List<String>> uploadImages(String listingId, List<MultipartFile> images) async {
+  Future<List<String>> uploadImages(
+    String listingId,
+    List<MultipartFile> images,
+  ) async {
     final formData = FormData.fromMap({'images': images});
     return _client.post<List<String>>(
       '${ApiConstants.cropListing(listingId)}/images',
       data: formData,
-      parser: (json) => ((json as Map<String, dynamic>)['images'] as List).cast<String>(),
+      parser: (json) =>
+          ((json as Map<String, dynamic>)['images'] as List).cast<String>(),
     );
   }
 
@@ -87,7 +104,11 @@ class MarketplaceRemoteDataSource {
     );
   }
 
-  Future<void> reportListing(String listingId, {required String reason, String? details}) {
+  Future<void> reportListing(
+    String listingId, {
+    required String reason,
+    String? details,
+  }) {
     return _client.post<void>(
       '${ApiConstants.cropListing(listingId)}/report',
       data: {'reason': reason, 'details': ?details},
@@ -104,12 +125,17 @@ class MarketplaceRemoteDataSource {
   Future<List<CropListingModel>> getBookmarks() {
     return _client.get<List<CropListingModel>>(
       ApiConstants.bookmarks,
-      parser: (json) =>
-          (json as List).map((e) => CropListingModel.fromJson(e as Map<String, dynamic>)).toList(),
+      parser: (json) => (json as List)
+          .map(
+            (e) =>
+                CropListingModel.fromJson(Map<String, dynamic>.from(e as Map)),
+          )
+          .toList(),
     );
   }
 }
 
 @Riverpod(keepAlive: true)
-MarketplaceRemoteDataSource marketplaceRemoteDataSource(MarketplaceRemoteDataSourceRef ref) =>
-    MarketplaceRemoteDataSource(ref.watch(apiClientProvider));
+MarketplaceRemoteDataSource marketplaceRemoteDataSource(
+  MarketplaceRemoteDataSourceRef ref,
+) => MarketplaceRemoteDataSource(ref.watch(apiClientProvider));

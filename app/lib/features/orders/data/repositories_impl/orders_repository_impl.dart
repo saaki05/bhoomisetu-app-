@@ -24,21 +24,24 @@ class OrdersRepositoryImpl implements OrdersRepository {
   }
 
   @override
-  Future<Either<Failure, PaginatedOrders>> listOrders(OrderListFilters filters) {
+  Future<Either<Failure, PaginatedOrders>> listOrders(
+    OrderListFilters filters,
+  ) {
     return _guard(() async {
       final (items, meta) = await _remote.listOrders(filters);
       return PaginatedOrders(
         items: items.map((m) => m.toEntity()).toList(),
-        page: (meta?['page'] as int?) ?? filters.page,
-        pageSize: (meta?['pageSize'] as int?) ?? 20,
-        total: (meta?['total'] as int?) ?? items.length,
-        totalPages: (meta?['totalPages'] as int?) ?? 1,
+        page: (meta?['page'] as num?)?.toInt() ?? filters.page,
+        pageSize: (meta?['pageSize'] as num?)?.toInt() ?? 20,
+        total: (meta?['total'] as num?)?.toInt() ?? items.length,
+        totalPages: (meta?['totalPages'] as num?)?.toInt() ?? 1,
       );
     });
   }
 
   @override
-  Future<Either<Failure, OrderEntity>> getOrder(String id) => _guard(() async => (await _remote.getOrder(id)).toEntity());
+  Future<Either<Failure, OrderEntity>> getOrder(String id) =>
+      _guard(() async => (await _remote.getOrder(id)).toEntity());
 
   @override
   Future<Either<Failure, OrderEntity>> createOrder({
@@ -67,12 +70,26 @@ class OrdersRepositoryImpl implements OrdersRepository {
   }
 
   @override
-  Future<Either<Failure, OrderEntity>> updateStatus(String id, {required OrderStatus status, String? note}) {
-    return _guard(() async => (await _remote.updateStatus(id, status: status.apiValue, note: note)).toEntity());
+  Future<Either<Failure, OrderEntity>> updateStatus(
+    String id, {
+    required OrderStatus status,
+    String? note,
+  }) {
+    return _guard(
+      () async => (await _remote.updateStatus(
+        id,
+        status: status.apiValue,
+        note: note,
+      )).toEntity(),
+    );
   }
 
   @override
-  Future<Either<Failure, Unit>> submitReview(String orderId, {required int rating, String? comment}) {
+  Future<Either<Failure, Unit>> submitReview(
+    String orderId, {
+    required int rating,
+    String? comment,
+  }) {
     return _guard(() async {
       await _remote.submitReview(orderId, rating: rating, comment: comment);
       return unit;
@@ -81,4 +98,5 @@ class OrdersRepositoryImpl implements OrdersRepository {
 }
 
 @Riverpod(keepAlive: true)
-OrdersRepository ordersRepository(OrdersRepositoryRef ref) => OrdersRepositoryImpl(ref.watch(ordersRemoteDataSourceProvider));
+OrdersRepository ordersRepository(OrdersRepositoryRef ref) =>
+    OrdersRepositoryImpl(ref.watch(ordersRemoteDataSourceProvider));
