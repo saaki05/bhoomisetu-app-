@@ -14,6 +14,32 @@ const { notFoundHandler, errorHandler } = require('./middleware/errorHandler');
 
 const env = loadEnv();
 
+function buildCorsOriginPolicy() {
+  if (env.NODE_ENV !== 'production' || env.CLIENT_ORIGIN === '*') return true;
+
+  const allowedOrigins = env.CLIENT_ORIGIN.split(',').map((origin) => origin.trim());
+  const netlifyPreviewSuffixes = allowedOrigins.flatMap((origin) => {
+    try {
+      const hostname = new URL(origin).hostname;
+      return hostname.endsWith('.netlify.app') ? [`--${hostname}`] : [];
+    } catch (_) {
+      return [];
+    }
+  });
+
+  return (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    try {
+      const url = new URL(origin);
+      const isOwnNetlifyPreview =
+        url.protocol === 'https:' && netlifyPreviewSuffixes.some((suffix) => url.hostname.endsWith(suffix));
+      return callback(null, isOwnNetlifyPreview);
+    } catch (_) {
+      return callback(null, false);
+    }
+  };
+}
+
 function createApp() {
   const app = express();
 
@@ -25,7 +51,7 @@ function createApp() {
     // The `cors` package checks an array origin for exact string equality,
     // so a literal "*" entry never actually matches a real Origin header —
     // it has to be passed as boolean `true` (reflect any origin) instead.
-    origin: env.NODE_ENV === 'production' && env.CLIENT_ORIGIN !== '*' ? env.CLIENT_ORIGIN.split(',') : true,
+    origin: buildCorsOriginPolicy(),
     credentials: true,
   }));
   app.use(compression());
