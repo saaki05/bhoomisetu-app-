@@ -62,6 +62,7 @@ class AppBootstrap {
     }
 
     await Hive.initFlutter();
+    SharedPreferences.setPrefix('bhoomisetu.preferences.');
     final startupResults = await Future.wait<dynamic>([
       Hive.openBox<String>(StorageKeys.cacheBox),
       Hive.openBox<String>(StorageKeys.draftsBox),
