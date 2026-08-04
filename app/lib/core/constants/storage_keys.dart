@@ -7,8 +7,8 @@ abstract final class StorageKeys {
   static const String biometricEnabled = 'bhoomisetu.biometric_enabled';
 
   // Hive boxes
-  static const String cacheBox = 'bhoomisetu_cache_box_v2';
-  static const String draftsBox = 'bhoomisetu_drafts_box_v2';
+  static const String cacheBox = 'bhoomisetu_cache_box';
+  static const String draftsBox = 'bhoomisetu_drafts_box';
 
   // Shared preferences
   static const String onboardingComplete = 'bhoomisetu.onboarding_complete';
