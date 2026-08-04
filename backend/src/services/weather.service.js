@@ -165,7 +165,7 @@ async function getWeatherForCoordinates(lat, lon) {
  * returning null) so the Home screen's weather card is never empty just
  * because the user hasn't filled in their district yet.
  */
-async function getWeatherForLocation({ district, state }) {
+async function getWeatherForLocation({ district }) {
   const location = (district ? await geocode(district) : null) ?? DEFAULT_LOCATION;
   return fetchForecast(location);
 }

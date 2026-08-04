@@ -47,6 +47,12 @@ const envSchema = z.object({
   MARKET_PRICE_API_KEY: z.string().optional().default(''),
   MARKET_PRICE_API_BASE_URL: z.string().optional().default(''),
 
+  BOOTSTRAP_DEMO_CATALOG: z
+    .enum(['true', 'false'])
+    .optional()
+    .default('true')
+    .transform((value) => value === 'true'),
+
   LOG_LEVEL: z.enum(['error', 'warn', 'info', 'http', 'debug']).default('info'),
 });
 
