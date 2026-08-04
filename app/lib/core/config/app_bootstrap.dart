@@ -17,7 +17,7 @@ class AppBootstrap {
   static Future<AppBootstrap> run() async {
     WidgetsFlutterBinding.ensureInitialized();
 
-    await dotenv.load(fileName: '.env');
+    await dotenv.load(fileName: 'config/app.env');
 
     await Hive.initFlutter();
     final startupResults = await Future.wait<dynamic>([

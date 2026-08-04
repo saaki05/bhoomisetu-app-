@@ -36,6 +36,18 @@ function createApp() {
     stream: { write: (message) => logger.http(message.trim()) },
   }));
 
+  app.get('/', (req, res) => {
+    res.status(200).json({
+      success: true,
+      message: 'BhoomiSetu API is online',
+      data: {
+        health: '/api/v1/health',
+        readiness: '/api/v1/health/readiness',
+        documentation: '/api/docs',
+      },
+    });
+  });
+
   app.use('/api/v1', globalLimiter, routes);
   app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
