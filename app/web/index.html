@@ -61,7 +61,29 @@
     // the current API configuration instead of an HTML fallback response.
     (async () => {
       const resetKey = 'bhoomisetu-service-worker-reset-v2';
+      const storageMigrationKey = 'bhoomisetu.storage.migration.v3';
       let wasControlled = false;
+
+      if (localStorage.getItem(storageMigrationKey) !== 'complete') {
+        localStorage.clear();
+
+        if ('indexedDB' in window && typeof indexedDB.databases === 'function') {
+          const databases = await indexedDB.databases();
+          await Promise.all(databases.map(({ name }) => new Promise((resolve) => {
+            if (!name) {
+              resolve();
+              return;
+            }
+
+            const request = indexedDB.deleteDatabase(name);
+            request.onsuccess = resolve;
+            request.onerror = resolve;
+            request.onblocked = resolve;
+          })));
+        }
+
+        localStorage.setItem(storageMigrationKey, 'complete');
+      }
 
       if ('serviceWorker' in navigator) {
         wasControlled = navigator.serviceWorker.controller !== null;
