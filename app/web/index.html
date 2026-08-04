@@ -55,6 +55,45 @@
       }
     });
   </script>
-  <script src="flutter_bootstrap.js" async></script>
+  <script>
+    // A previously published Flutter service worker cached configuration files
+    // as the SPA shell. Clean it up before booting so existing visitors receive
+    // the current API configuration instead of an HTML fallback response.
+    (async () => {
+      const resetKey = 'bhoomisetu-service-worker-reset-v2';
+      let wasControlled = false;
+
+      if ('serviceWorker' in navigator) {
+        wasControlled = navigator.serviceWorker.controller !== null;
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map((registration) => registration.unregister()));
+      }
+
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+      }
+
+      if (wasControlled && sessionStorage.getItem(resetKey) !== 'complete') {
+        sessionStorage.setItem(resetKey, 'complete');
+        const refreshedUrl = new URL(window.location.href);
+        refreshedUrl.searchParams.set('app-refresh', Date.now().toString());
+        window.location.replace(refreshedUrl.toString());
+        return;
+      }
+
+      sessionStorage.removeItem(resetKey);
+      const bootstrap = document.createElement('script');
+      bootstrap.src = `flutter_bootstrap.js?v=${Date.now()}`;
+      bootstrap.async = true;
+      document.body.appendChild(bootstrap);
+    })().catch((error) => {
+      console.error('Unable to prepare BhoomiSetu for startup', error);
+      const bootstrap = document.createElement('script');
+      bootstrap.src = `flutter_bootstrap.js?v=${Date.now()}`;
+      bootstrap.async = true;
+      document.body.appendChild(bootstrap);
+    });
+  </script>
 </body>
 </html>

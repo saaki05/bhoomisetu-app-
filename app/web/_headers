@@ -10,11 +10,11 @@
 /main.dart.js
   Cache-Control: no-cache, no-store, must-revalidate
 
-/assets/config/app.env
-  Cache-Control: no-cache, no-store, must-revalidate
-
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
+
+/assets/config/app.env
+  Cache-Control: no-cache, no-store, must-revalidate
 
 /canvaskit/*
   Cache-Control: public, max-age=31536000, immutable
