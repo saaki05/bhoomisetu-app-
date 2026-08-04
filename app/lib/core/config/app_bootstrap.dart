@@ -20,10 +20,12 @@ class AppBootstrap {
     await dotenv.load(fileName: '.env');
 
     await Hive.initFlutter();
-    await Hive.openBox<String>(StorageKeys.cacheBox);
-    await Hive.openBox<String>(StorageKeys.draftsBox);
-
-    final sharedPreferences = await SharedPreferences.getInstance();
+    final startupResults = await Future.wait<dynamic>([
+      Hive.openBox<String>(StorageKeys.cacheBox),
+      Hive.openBox<String>(StorageKeys.draftsBox),
+      SharedPreferences.getInstance(),
+    ]);
+    final sharedPreferences = startupResults[2] as SharedPreferences;
 
     return AppBootstrap._(sharedPreferences: sharedPreferences);
   }

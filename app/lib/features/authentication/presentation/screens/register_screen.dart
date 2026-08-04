@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +12,7 @@ import '../../../../core/widgets/app_text_field.dart';
 import '../../domain/entities/user_role.dart';
 import '../providers/auth_controller.dart';
 import '../widgets/role_selector.dart';
+import '../widgets/auth_status_banner.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -27,9 +30,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _confirmPasswordController = TextEditingController();
   UserRole _role = UserRole.farmer;
   bool _isSubmitting = false;
+  String? _statusMessage;
+  String? _errorMessage;
+  Timer? _slowRequestTimer;
 
   @override
   void dispose() {
+    _slowRequestTimer?.cancel();
     _fullNameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
@@ -40,18 +47,40 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() => _isSubmitting = true);
+    _slowRequestTimer?.cancel();
+    setState(() {
+      _isSubmitting = true;
+      _statusMessage = null;
+      _errorMessage = null;
+    });
+    _slowRequestTimer = Timer(const Duration(seconds: 4), () {
+      if (mounted && _isSubmitting) {
+        setState(
+          () => _statusMessage =
+              'The secure server is starting. Your account will be created as soon as it is ready.',
+        );
+      }
+    });
 
-    final failure = await ref.read(authControllerProvider.notifier).register(
+    final failure = await ref
+        .read(authControllerProvider.notifier)
+        .register(
           fullName: _fullNameController.text.trim(),
           email: _emailController.text.trim(),
-          phone: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
+          phone: _phoneController.text.trim().isEmpty
+              ? null
+              : _phoneController.text.trim(),
           password: _passwordController.text,
           role: _role,
         );
 
     if (!mounted) return;
-    setState(() => _isSubmitting = false);
+    _slowRequestTimer?.cancel();
+    setState(() {
+      _isSubmitting = false;
+      _statusMessage = null;
+      _errorMessage = failure?.message;
+    });
 
     if (failure != null) {
       context.showSnackBar(failure.message, isError: true);
@@ -64,7 +93,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       appBar: AppBar(title: Text(context.l10n.authRegisterTitle)),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: AppConstants.spaceLg, vertical: AppConstants.spaceMd),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppConstants.spaceLg,
+            vertical: AppConstants.spaceMd,
+          ),
           child: Form(
             key: _formKey,
             child: Column(
@@ -72,7 +104,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               children: [
                 Text('I am a...', style: context.textTheme.labelLarge),
                 const SizedBox(height: AppConstants.spaceSm),
-                RoleSelector(selected: _role, onChanged: (role) => setState(() => _role = role)),
+                RoleSelector(
+                  selected: _role,
+                  onChanged: (role) => setState(() => _role = role),
+                ),
                 const SizedBox(height: AppConstants.spaceLg),
                 AppTextField(
                   controller: _fullNameController,
@@ -80,7 +115,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   prefixIcon: Icons.person_outline_rounded,
                   textInputAction: TextInputAction.next,
                   autofillHints: const [AutofillHints.name],
-                  validator: (v) => Validators.required(v, fieldName: 'Full name'),
+                  validator: (v) =>
+                      Validators.required(v, fieldName: 'Full name'),
                 ),
                 const SizedBox(height: AppConstants.spaceMd),
                 AppTextField(
@@ -100,7 +136,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   prefixIcon: Icons.phone_outlined,
                   keyboardType: TextInputType.phone,
                   textInputAction: TextInputAction.next,
-                  validator: (v) => v == null || v.isEmpty ? null : Validators.indianPhone(v),
+                  validator: (v) =>
+                      v == null || v.isEmpty ? null : Validators.indianPhone(v),
                 ),
                 const SizedBox(height: AppConstants.spaceMd),
                 AppTextField(
@@ -119,17 +156,29 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   prefixIcon: Icons.lock_outline_rounded,
                   obscureText: true,
                   textInputAction: TextInputAction.done,
-                  validator: (v) => Validators.confirmPassword(v, _passwordController.text),
+                  validator: (v) =>
+                      Validators.confirmPassword(v, _passwordController.text),
                 ),
                 const SizedBox(height: AppConstants.spaceXl),
-                AppButton(label: context.l10n.authRegisterButton, isLoading: _isSubmitting, onPressed: _submit),
+                AppButton(
+                  label: context.l10n.authRegisterButton,
+                  isLoading: _isSubmitting,
+                  onPressed: _submit,
+                ),
+                AuthStatusBanner(
+                  message: _errorMessage ?? _statusMessage,
+                  isError: _errorMessage != null,
+                ),
                 const SizedBox(height: AppConstants.spaceMd),
                 Center(
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(context.l10n.authHaveAccount),
-                      TextButton(onPressed: () => context.pop(), child: Text(context.l10n.authLoginButton)),
+                      TextButton(
+                        onPressed: () => context.pop(),
+                        child: Text(context.l10n.authLoginButton),
+                      ),
                     ],
                   ),
                 ),
