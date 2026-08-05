@@ -18,6 +18,11 @@ function buildLimiter({ windowMs, max, message, prefix }) {
     max,
     standardHeaders: true,
     legacyHeaders: false,
+    // Redis is an optimization for sharing counters across instances, not a
+    // dependency that should take the public API offline. Render and managed
+    // Redis can wake independently after an idle period; allowing requests to
+    // continue during that brief window prevents cold-start 500 responses.
+    passOnStoreError: true,
     store: env.REDIS_URL
       ? new RedisStore({
         sendCommand: (...args) => getRedisClient().call(...args),

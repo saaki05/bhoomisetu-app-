@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../constants/api_constants.dart';
 import '../exceptions/app_exception.dart';
 import 'dio_client.dart';
 
@@ -11,9 +12,41 @@ part 'api_client.g.dart';
 /// `{ success, message, data, ... }`) and translates [DioException]s into
 /// the [AppException] hierarchy the domain layer understands.
 class ApiClient {
-  ApiClient(this._dio);
+  ApiClient(
+    this._dio, {
+    this.backendRetryBaseDelay = const Duration(seconds: 2),
+  });
 
   final Dio _dio;
+  final Duration backendRetryBaseDelay;
+
+  /// Wakes and verifies the hosted API before a non-idempotent operation.
+  ///
+  /// Render and its Redis service may resume independently after an idle
+  /// period. A short-lived 5xx/connection reset during that window must not
+  /// be allowed to consume a registration request. Calling this before auth
+  /// writes makes the subsequent POST reliable without retrying the POST and
+  /// risking a duplicate account.
+  Future<void> ensureBackendReady() async {
+    DioException? lastError;
+
+    for (var attempt = 0; attempt < 3; attempt++) {
+      try {
+        await _dio.get(ApiConstants.health, options: _options(true));
+        return;
+      } on DioException catch (error) {
+        lastError = error;
+        final statusCode = error.response?.statusCode;
+        final isTransient = statusCode == null || statusCode >= 500;
+        if (!isTransient || attempt == 2) {
+          throw _mapDioException(error);
+        }
+        await Future<void>.delayed(backendRetryBaseDelay * (attempt + 1));
+      }
+    }
+
+    throw _mapDioException(lastError!);
+  }
 
   Future<T> get<T>(
     String path, {
@@ -125,10 +158,16 @@ class ApiClient {
 
   AppException _mapDioException(DioException error) {
     if (error.type == DioExceptionType.connectionError ||
-        error.type == DioExceptionType.connectionTimeout ||
-        error.type == DioExceptionType.receiveTimeout ||
+        error.type == DioExceptionType.connectionTimeout) {
+      return const NetworkException(
+        'Unable to reach the BhoomiSetu server. Check your connection and try again.',
+      );
+    }
+    if (error.type == DioExceptionType.receiveTimeout ||
         error.type == DioExceptionType.sendTimeout) {
-      return const NetworkException();
+      return const NetworkException(
+        'The BhoomiSetu server is taking too long to respond. Please try again.',
+      );
     }
 
     final response = error.response;

@@ -4,8 +4,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 /// Base values come from `.env` (see `.env.example`); endpoint paths are
 /// fixed contracts shared with the Node.js backend's route definitions.
 abstract final class ApiConstants {
-  static String get baseUrl => dotenv.env['API_BASE_URL'] ?? 'http://10.0.2.2:4000/api/v1';
-  static String get socketUrl => dotenv.env['SOCKET_URL'] ?? 'http://10.0.2.2:4000';
+  static String get baseUrl =>
+      dotenv.env['API_BASE_URL'] ?? 'http://10.0.2.2:4000/api/v1';
+  static String get socketUrl =>
+      dotenv.env['SOCKET_URL'] ?? 'http://10.0.2.2:4000';
 
   // Generous enough to survive a free-tier host cold start: Render spins
   // idle services down after ~15 minutes and the next request waits ~30-50s
@@ -14,6 +16,9 @@ abstract final class ApiConstants {
   static const Duration connectTimeout = Duration(seconds: 70);
   static const Duration receiveTimeout = Duration(seconds: 70);
   static const Duration sendTimeout = Duration(seconds: 70);
+
+  // Service availability
+  static const String health = '/health';
 
   // Auth
   static const String register = '/auth/register';
@@ -45,7 +50,8 @@ abstract final class ApiConstants {
 
   // Chat
   static const String conversations = '/chat/conversations';
-  static String conversationMessages(String id) => '/chat/conversations/$id/messages';
+  static String conversationMessages(String id) =>
+      '/chat/conversations/$id/messages';
   static String conversationRead(String id) => '/chat/conversations/$id/read';
 
   // Weather

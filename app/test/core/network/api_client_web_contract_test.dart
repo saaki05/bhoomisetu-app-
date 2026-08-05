@@ -63,4 +63,47 @@ void main() {
     expect((meta?['page'] as num).toInt(), 1);
     expect((meta?['totalPages'] as num).toInt(), 0);
   });
+
+  test(
+    'retries a transient backend startup failure before continuing',
+    () async {
+      var attempts = 0;
+      dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            attempts++;
+            if (attempts == 1) {
+              handler.reject(
+                DioException.badResponse(
+                  statusCode: 500,
+                  requestOptions: options,
+                  response: Response<dynamic>(
+                    requestOptions: options,
+                    statusCode: 500,
+                    data: const {
+                      'success': false,
+                      'message': 'Service is starting',
+                    },
+                  ),
+                ),
+              );
+              return;
+            }
+            handler.resolve(
+              Response<dynamic>(
+                requestOptions: options,
+                statusCode: 200,
+                data: const {'success': true},
+              ),
+            );
+          },
+        ),
+      );
+      client = ApiClient(dio, backendRetryBaseDelay: Duration.zero);
+
+      await client.ensureBackendReady();
+
+      expect(attempts, 2);
+    },
+  );
 }

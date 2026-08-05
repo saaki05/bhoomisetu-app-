@@ -21,7 +21,8 @@ class AuthRemoteDataSource {
     String? phone,
     required String password,
     required String role,
-  }) {
+  }) async {
+    await _client.ensureBackendReady();
     return _client.post<AuthResponseModel>(
       ApiConstants.register,
       data: {
@@ -31,22 +32,32 @@ class AuthRemoteDataSource {
         'password': password,
         'role': role,
       },
-      parser: (json) => AuthResponseModel.fromJson(json as Map<String, dynamic>),
+      parser: (json) =>
+          AuthResponseModel.fromJson(json as Map<String, dynamic>),
       skipAuth: true,
     );
   }
 
-  Future<AuthResponseModel> login({required String email, required String password}) {
+  Future<AuthResponseModel> login({
+    required String email,
+    required String password,
+  }) async {
+    await _client.ensureBackendReady();
     return _client.post<AuthResponseModel>(
       ApiConstants.login,
       data: {'email': email, 'password': password},
-      parser: (json) => AuthResponseModel.fromJson(json as Map<String, dynamic>),
+      parser: (json) =>
+          AuthResponseModel.fromJson(json as Map<String, dynamic>),
       skipAuth: true,
     );
   }
 
   Future<void> requestOtp({required String phone}) {
-    return _client.post<void>(ApiConstants.requestOtp, data: {'phone': phone}, skipAuth: true);
+    return _client.post<void>(
+      ApiConstants.requestOtp,
+      data: {'phone': phone},
+      skipAuth: true,
+    );
   }
 
   Future<AuthResponseModel> verifyOtp({
@@ -57,40 +68,53 @@ class AuthRemoteDataSource {
   }) {
     return _client.post<AuthResponseModel>(
       ApiConstants.verifyOtp,
-      data: {
-        'phone': phone,
-        'otp': otp,
-        'fullName': ?fullName,
-        'role': ?role,
-      },
-      parser: (json) => AuthResponseModel.fromJson(json as Map<String, dynamic>),
+      data: {'phone': phone, 'otp': otp, 'fullName': ?fullName, 'role': ?role},
+      parser: (json) =>
+          AuthResponseModel.fromJson(json as Map<String, dynamic>),
       skipAuth: true,
     );
   }
 
-  Future<AuthResponseModel> signInWithGoogle({required String idToken, String? role}) {
+  Future<AuthResponseModel> signInWithGoogle({
+    required String idToken,
+    String? role,
+  }) {
     return _client.post<AuthResponseModel>(
       ApiConstants.googleSignIn,
       data: {'idToken': idToken, 'role': ?role},
-      parser: (json) => AuthResponseModel.fromJson(json as Map<String, dynamic>),
+      parser: (json) =>
+          AuthResponseModel.fromJson(json as Map<String, dynamic>),
       skipAuth: true,
     );
   }
 
   Future<void> forgotPassword({required String email}) {
-    return _client.post<void>(ApiConstants.forgotPassword, data: {'email': email}, skipAuth: true);
+    return _client.post<void>(
+      ApiConstants.forgotPassword,
+      data: {'email': email},
+      skipAuth: true,
+    );
   }
 
-  Future<void> resetPassword({required String recoveryAccessToken, required String newPassword}) {
+  Future<void> resetPassword({
+    required String recoveryAccessToken,
+    required String newPassword,
+  }) {
     return _client.post<void>(
       ApiConstants.resetPassword,
-      data: {'recoveryAccessToken': recoveryAccessToken, 'newPassword': newPassword},
+      data: {
+        'recoveryAccessToken': recoveryAccessToken,
+        'newPassword': newPassword,
+      },
       skipAuth: true,
     );
   }
 
   Future<void> logout({required String refreshToken}) {
-    return _client.post<void>(ApiConstants.logout, data: {'refreshToken': refreshToken});
+    return _client.post<void>(
+      ApiConstants.logout,
+      data: {'refreshToken': refreshToken},
+    );
   }
 
   Future<UserModel> me() {
