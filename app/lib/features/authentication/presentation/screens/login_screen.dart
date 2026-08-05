@@ -11,6 +11,7 @@ import '../../../../core/router/app_routes.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/language_picker_sheet.dart';
 import '../../data/repositories_impl/auth_repository_impl.dart';
 import '../providers/auth_controller.dart';
 import '../providers/biometric_login_provider.dart';
@@ -123,6 +124,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: IconButton.filledTonal(
+                    icon: const Icon(Icons.language_rounded),
+                    tooltip: context.l10n.languageTooltip,
+                    onPressed: () => showLanguagePickerSheet(context, ref),
+                  ),
+                ),
                 Icon(
                   Icons.eco_rounded,
                   size: 48,

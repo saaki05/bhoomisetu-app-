@@ -12,6 +12,10 @@
   "commonNoInternet": "No internet connection",
   "commonEmpty": "Nothing here yet",
 
+  "languageChoose": "Choose your language",
+  "languageSystemDefault": "Use phone language",
+  "languageTooltip": "Change language",
+
   "authLoginTitle": "Welcome back",
   "authLoginSubtitle": "Log in to continue trading, farming smarter.",
   "authRegisterTitle": "Create your account",

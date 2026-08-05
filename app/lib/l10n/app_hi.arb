@@ -11,6 +11,10 @@
   "commonNoInternet": "इंटरनेट कनेक्शन नहीं है",
   "commonEmpty": "अभी यहाँ कुछ भी नहीं है",
 
+  "languageChoose": "अपनी भाषा चुनें",
+  "languageSystemDefault": "फ़ोन की भाषा का उपयोग करें",
+  "languageTooltip": "भाषा बदलें",
+
   "authLoginTitle": "वापसी पर स्वागत है",
   "authLoginSubtitle": "स्मार्ट खेती और व्यापार जारी रखने के लिए लॉग इन करें।",
   "authRegisterTitle": "अपना खाता बनाएं",
