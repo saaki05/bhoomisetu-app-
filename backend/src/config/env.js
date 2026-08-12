@@ -47,6 +47,11 @@ const envSchema = z.object({
   MARKET_PRICE_API_KEY: z.string().optional().default(''),
   MARKET_PRICE_API_BASE_URL: z.string().optional().default(''),
 
+  // AI Advisory chatbot. Optional: the /advisory/chat endpoint returns a
+  // clear 503 rather than crashing the server when this isn't configured.
+  GROQ_API_KEY: z.string().optional().default(''),
+  GROQ_MODEL: z.string().optional().default('llama-3.3-70b-versatile'),
+
   BOOTSTRAP_DEMO_CATALOG: z
     .enum(['true', 'false'])
     .optional()

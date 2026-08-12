@@ -48,8 +48,15 @@ enum OrderStatus {
 
 @freezed
 abstract class OrderParty with _$OrderParty {
-  const factory OrderParty({required String id, required String fullName, String? avatarUrl, String? phone}) =
-      _OrderParty;
+  const factory OrderParty({
+    required String id,
+    required String fullName,
+    String? avatarUrl,
+    String? phone,
+    /// Only populated for the farmer side — the pickup address a buyer
+    /// hands to a courier (e.g. Porter) when arranging their own delivery.
+    String? pickupAddress,
+  }) = _OrderParty;
 }
 
 @freezed

@@ -152,6 +152,41 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: AppConstants.spaceXl),
+                // Google first: no password to forget, matches how most
+                // people already expect to sign into a new app.
+                if (AuthFeatureFlags.googleEnabled) ...[
+                  AppButton(
+                    label: context.l10n.authContinueWithGoogle,
+                    icon: Icons.g_mobiledata_rounded,
+                    isLoading: _isSubmitting,
+                    onPressed: _continueWithGoogle,
+                  ),
+                  AuthStatusBanner(
+                    message: _errorMessage ?? _statusMessage,
+                    isError: _errorMessage != null,
+                  ),
+                  const SizedBox(height: AppConstants.spaceLg),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Divider(color: context.colors.outlineVariant),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppConstants.spaceSm,
+                        ),
+                        child: Text(
+                          'or continue with email',
+                          style: context.textTheme.bodySmall,
+                        ),
+                      ),
+                      Expanded(
+                        child: Divider(color: context.colors.outlineVariant),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppConstants.spaceLg),
+                ],
                 AppTextField(
                   controller: _emailController,
                   label: context.l10n.authEmailLabel,
@@ -183,13 +218,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 const SizedBox(height: AppConstants.spaceSm),
                 AppButton(
                   label: context.l10n.authLoginButton,
+                  variant: AuthFeatureFlags.googleEnabled
+                      ? AppButtonVariant.outlined
+                      : AppButtonVariant.filled,
                   isLoading: _isSubmitting,
                   onPressed: _submit,
                 ),
-                AuthStatusBanner(
-                  message: _errorMessage ?? _statusMessage,
-                  isError: _errorMessage != null,
-                ),
+                if (!AuthFeatureFlags.googleEnabled)
+                  AuthStatusBanner(
+                    message: _errorMessage ?? _statusMessage,
+                    isError: _errorMessage != null,
+                  ),
                 if (biometricEnabled) ...[
                   const SizedBox(height: AppConstants.spaceSm),
                   AppButton(
@@ -199,42 +238,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     onPressed: _loginWithBiometrics,
                   ),
                 ],
-                if (AuthFeatureFlags.googleEnabled ||
-                    AuthFeatureFlags.phoneOtpEnabled) ...[
-                  const SizedBox(height: AppConstants.spaceLg),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Divider(color: context.colors.outlineVariant),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppConstants.spaceSm,
-                        ),
-                        child: Text('or', style: context.textTheme.bodySmall),
-                      ),
-                      Expanded(
-                        child: Divider(color: context.colors.outlineVariant),
-                      ),
-                    ],
+                if (AuthFeatureFlags.phoneOtpEnabled) ...[
+                  const SizedBox(height: AppConstants.spaceSm),
+                  AppButton(
+                    label: 'Log in with mobile OTP',
+                    variant: AppButtonVariant.text,
+                    icon: Icons.sms_outlined,
+                    onPressed: () => context.push(AppRoutes.otpVerification),
                   ),
-                  const SizedBox(height: AppConstants.spaceLg),
-                  if (AuthFeatureFlags.googleEnabled)
-                    AppButton(
-                      label: context.l10n.authContinueWithGoogle,
-                      variant: AppButtonVariant.outlined,
-                      icon: Icons.g_mobiledata_rounded,
-                      onPressed: _continueWithGoogle,
-                    ),
-                  if (AuthFeatureFlags.phoneOtpEnabled) ...[
-                    const SizedBox(height: AppConstants.spaceSm),
-                    AppButton(
-                      label: 'Log in with mobile OTP',
-                      variant: AppButtonVariant.text,
-                      icon: Icons.sms_outlined,
-                      onPressed: () => context.push(AppRoutes.otpVerification),
-                    ),
-                  ],
                 ],
                 const SizedBox(height: AppConstants.spaceLg),
                 Row(

@@ -10,6 +10,7 @@ import '../../../../core/widgets/offline_banner.dart';
 import '../../../../core/widgets/states/async_value_widget.dart';
 import '../../../../core/widgets/states/empty_view.dart';
 import '../../../../core/widgets/states/shimmer_box.dart';
+import '../../../advisory/presentation/screens/advisory_chat_screen.dart';
 import '../../../authentication/presentation/providers/auth_controller.dart';
 import '../../../farm_tools/presentation/screens/farm_tools_screen.dart';
 import '../../domain/entities/home_summary_entity.dart';
@@ -44,6 +45,13 @@ class HomeScreen extends ConsumerWidget {
             onPressed: () => ref.read(authControllerProvider.notifier).logout(),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const AdvisoryChatScreen()),
+        ),
+        icon: const Icon(Icons.eco_rounded),
+        label: const Text('Ask AI Advisor'),
       ),
       body: Column(
         children: [

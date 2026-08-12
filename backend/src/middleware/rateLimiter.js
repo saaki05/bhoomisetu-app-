@@ -57,4 +57,13 @@ const otpLimiter = buildLimiter({
   prefix: 'otp',
 });
 
-module.exports = { globalLimiter, authLimiter, otpLimiter };
+// LLM calls are the slowest and most expensive requests in the API, so they
+// get their own, tighter budget rather than sharing the general limiter.
+const advisoryLimiter = buildLimiter({
+  windowMs: 60 * 1000,
+  max: 10,
+  message: 'Too many questions at once, please wait a moment before asking again',
+  prefix: 'advisory',
+});
+
+module.exports = { globalLimiter, authLimiter, otpLimiter, advisoryLimiter };

@@ -38,18 +38,31 @@ function mapOrder(row) {
       ? { id: row.buyer.id, fullName: row.buyer.full_name, avatarUrl: row.buyer.avatar_url, phone: row.buyer.phone }
       : undefined,
     farmer: row.farmer
-      ? { id: row.farmer.id, fullName: row.farmer.full_name, avatarUrl: row.farmer.avatar_url, phone: row.farmer.phone }
+      ? {
+          id: row.farmer.id,
+          fullName: row.farmer.full_name,
+          avatarUrl: row.farmer.avatar_url,
+          phone: row.farmer.phone,
+          // Pickup details for the buyer's own delivery arrangement (e.g.
+          // booking a Porter/other courier once the order is accepted).
+          pickupAddress: formatPickupAddress(row.farmer),
+        }
       : undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
 }
 
+function formatPickupAddress(profile) {
+  const parts = [profile.village, profile.district, profile.state, profile.pincode].filter(Boolean);
+  return parts.length > 0 ? parts.join(', ') : null;
+}
+
 const ORDER_SELECT = `
   *,
   crop_listings ( title, crop_listing_images ( image_url, display_order ) ),
   buyer:profiles!orders_buyer_id_fkey ( id, full_name, avatar_url, phone ),
-  farmer:profiles!orders_farmer_id_fkey ( id, full_name, avatar_url, phone )
+  farmer:profiles!orders_farmer_id_fkey ( id, full_name, avatar_url, phone, village, district, state, pincode )
 `;
 
 async function createOrder(buyerId, payload) {

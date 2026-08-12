@@ -66,4 +66,7 @@ abstract final class ApiConstants {
   static const String profile = '/profile';
   static const String farms = '/profile/farms';
   static const String dashboard = '/profile/dashboard';
+
+  // AI Advisory
+  static const String advisoryChat = '/advisory/chat';
 }

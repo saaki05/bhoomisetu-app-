@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/extensions/context_extensions.dart';
 import '../../domain/entities/home_summary_entity.dart';
+import 'market_price_localizations.dart';
 
 class MarketPriceCard extends StatelessWidget {
   const MarketPriceCard({super.key, required this.price});
@@ -23,7 +24,7 @@ class MarketPriceCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            price.cropName,
+            localizedMarketCropName(context, price.cropName),
             style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -44,7 +45,7 @@ class MarketPriceCard extends StatelessWidget {
             ),
           ),
           Text(
-            'per ${price.unit}',
+            localizedMarketPriceUnit(context, price.unit),
             style: context.textTheme.bodySmall?.copyWith(color: context.colors.onSurfaceVariant),
           ),
           const SizedBox(height: 2),

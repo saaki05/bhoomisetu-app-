@@ -6,7 +6,7 @@ part 'order_model.g.dart';
 
 @JsonSerializable(createToJson: false)
 class OrderPartyModel {
-  OrderPartyModel({required this.id, required this.fullName, this.avatarUrl, this.phone});
+  OrderPartyModel({required this.id, required this.fullName, this.avatarUrl, this.phone, this.pickupAddress});
 
   factory OrderPartyModel.fromJson(Map<String, dynamic> json) => _$OrderPartyModelFromJson(json);
 
@@ -14,8 +14,15 @@ class OrderPartyModel {
   final String fullName;
   final String? avatarUrl;
   final String? phone;
+  final String? pickupAddress;
 
-  OrderParty toEntity() => OrderParty(id: id, fullName: fullName, avatarUrl: avatarUrl, phone: phone);
+  OrderParty toEntity() => OrderParty(
+        id: id,
+        fullName: fullName,
+        avatarUrl: avatarUrl,
+        phone: phone,
+        pickupAddress: pickupAddress,
+      );
 }
 
 @JsonSerializable(createToJson: false)

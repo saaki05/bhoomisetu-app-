@@ -11,6 +11,7 @@ import '../../domain/entities/order_entity.dart';
 import '../../domain/usecases/order_usecases.dart';
 import '../providers/order_detail_provider.dart';
 import '../providers/orders_list_controller.dart';
+import '../widgets/delivery_options_sheet.dart';
 import '../widgets/order_status_chip.dart';
 import '../widgets/review_dialog.dart';
 
@@ -226,6 +227,17 @@ class _ActionButtonsState extends ConsumerState<_ActionButtons> {
     }
 
     if (isBuyer) {
+      if (order.status == OrderStatus.accepted ||
+          order.status == OrderStatus.preparing ||
+          order.status == OrderStatus.outForDelivery) {
+        buttons.add(AppButton(
+          label: 'Arrange delivery',
+          icon: Icons.local_shipping_outlined,
+          variant: AppButtonVariant.outlined,
+          onPressed: () => showDeliveryOptionsSheet(context, order),
+        ));
+        buttons.add(const SizedBox(height: AppConstants.spaceSm));
+      }
       if (order.status == OrderStatus.pending || order.status == OrderStatus.accepted) {
         buttons.add(AppButton(
           label: 'Cancel order',

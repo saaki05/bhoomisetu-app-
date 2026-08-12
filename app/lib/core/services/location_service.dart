@@ -10,6 +10,7 @@ part 'location_service.g.dart';
 /// block on this.
 class LocationService {
   Future<Position?> getCurrentPosition() async {
+    Position? lastKnownPosition;
     try {
       if (!await Geolocator.isLocationServiceEnabled()) return null;
 
@@ -21,11 +22,18 @@ class LocationService {
         return null;
       }
 
+      // A cached fix is preferable to a fabricated server default and gives
+      // us a reliable fallback indoors, where a fresh GPS fix can take time.
+      lastKnownPosition = await Geolocator.getLastKnownPosition();
+
       return await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.low, timeLimit: Duration(seconds: 8)),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
+          timeLimit: Duration(seconds: 20),
+        ),
       );
     } catch (_) {
-      return null;
+      return lastKnownPosition;
     }
   }
 }

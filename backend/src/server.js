@@ -15,8 +15,17 @@ const io = initSocketServer(httpServer);
 app.set('io', io);
 
 async function startServer() {
-  await ensureReferenceData({ includeDemoCatalog: env.BOOTSTRAP_DEMO_CATALOG });
-  logger.info('Reference data and showcase catalog are ready');
+  // Seeding is a convenience bootstrap (reference categories, a demo
+  // catalog), not a hard dependency for serving traffic. If Supabase is
+  // unreachable or still cold-starting, the API should still come up and
+  // start answering health checks / already-seeded data — not refuse to
+  // boot entirely. Retried on the next deploy/restart either way.
+  try {
+    await ensureReferenceData({ includeDemoCatalog: env.BOOTSTRAP_DEMO_CATALOG });
+    logger.info('Reference data and showcase catalog are ready');
+  } catch (error) {
+    logger.error('Reference data seeding failed; continuing startup without it', { error: error.message });
+  }
 
   httpServer.listen(env.PORT, () => {
     logger.info(`BhoomiSetu API listening on port ${env.PORT} [${env.NODE_ENV}]`);
