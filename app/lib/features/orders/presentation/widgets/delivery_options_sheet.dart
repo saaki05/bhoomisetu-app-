@@ -19,6 +19,32 @@ const _porterPlayStoreUrl = 'https://play.google.com/store/apps/details?id=$_por
 const _porterAppStoreUrl = 'https://apps.apple.com/in/app/porter-logistics-service-app/id1109398410';
 const _porterWebUrl = 'https://porter.in';
 
+/// Farmer phones are stored as bare 10-digit Indian numbers (see
+/// backend/src/validators/profile.validator.js), so the country code has to
+/// be added here before handing it to wa.me.
+String _whatsAppUrl(String phone, String message) {
+  final digitsOnly = phone.replaceAll(RegExp(r'\D'), '');
+  final withCountryCode = digitsOnly.length == 10 ? '91$digitsOnly' : digitsOnly;
+  return 'https://wa.me/$withCountryCode?text=${Uri.encodeComponent(message)}';
+}
+
+Future<void> _openWhatsApp(OrderEntity order) async {
+  final farmer = order.farmer;
+  final phone = farmer?.phone;
+  if (phone == null) return;
+
+  final address = farmer?.pickupAddress;
+  final message = StringBuffer("Hi${farmer?.fullName != null ? ' ${farmer!.fullName}' : ''}, "
+      'I placed an order with you on BhoomiSetu and would like to arrange pickup for delivery.')
+    ..write(address != null ? '\nPickup address on file: $address' : '')
+    ..write('\nOrder ID: ${order.id}');
+
+  // wa.me works via a browser fallback even when WhatsApp itself isn't
+  // installed, so unlike Porter there's no separate "not installed" path
+  // to handle here.
+  await launchUrlString(_whatsAppUrl(phone, message.toString()), mode: LaunchMode.externalApplication);
+}
+
 /// Tries the installed app first; if that fails (not installed, or the
 /// platform can't resolve an `android-app://` intent), falls back to the
 /// platform store listing so the buyer can install it.
@@ -126,8 +152,22 @@ class _DeliveryOptionsSheet extends StatelessWidget {
             ],
             const SizedBox(height: AppConstants.spaceXl),
             AppButton(
-              label: 'Open Porter',
+              label: 'Message farmer on WhatsApp',
+              icon: Icons.chat_rounded,
+              onPressed: farmer?.phone == null ? null : () => _openWhatsApp(order),
+            ),
+            if (farmer?.phone == null) ...[
+              const SizedBox(height: AppConstants.spaceXs),
+              Text(
+                "This farmer hasn't added a phone number yet, so WhatsApp isn't available.",
+                style: context.textTheme.bodySmall?.copyWith(color: context.colors.onSurfaceVariant),
+              ),
+            ],
+            const SizedBox(height: AppConstants.spaceSm),
+            AppButton(
+              label: 'Or book a rider on Porter',
               icon: Icons.open_in_new_rounded,
+              variant: AppButtonVariant.outlined,
               onPressed: _openPorter,
             ),
           ],
