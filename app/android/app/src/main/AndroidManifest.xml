@@ -52,5 +52,11 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- Without this, PackageManager hides Porter from this app on
+             Android 11+ (package visibility), so canLaunchUrl on its
+             android-app:// URI always returns false and the delivery sheet
+             falls straight to the Play Store even when Porter is already
+             installed. See delivery_options_sheet.dart. -->
+        <package android:name="com.theporter.android.customerapp"/>
     </queries>
 </manifest>
